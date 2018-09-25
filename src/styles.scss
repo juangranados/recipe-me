@@ -1,0 +1,24 @@
+//https://www.amadousall.com/the-good-parts-of-bootstrap-4-you-are-missing-in-your-angular-material-projects/#bootstraputilities
+//@import "variables";
+//@import "~bootstrap/scss/functions";
+//@import "~bootstrap/scss/variables";
+//@import "~bootstrap/scss/mixins";
+//@import "~bootstrap/scss/reboot";
+//@import "~bootstrap/scss/grid";
+//@import "~bootstrap/scss/utilities";
+//@import "reset";
+* {
+  &:active,
+  :focus {
+    outline: none !important;  // 1
+  }
+}
+
+label {
+  margin-bottom: 0; // 2
+}
+
+
+//a:not(.mat-button):not(.mat-raised-button):not(.mat-fab):not(.mat-mini-fab):not([mat-list-item]) {
+//  color: #3f51b5; // 3
+//}

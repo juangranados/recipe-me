@@ -1,0 +1,10 @@
+.card {
+    max-width: 400px;
+    display: block;
+    margin: 10px auto;
+    vertical-align:middle;
+    cursor: pointer;
+}
+img {
+    cursor: pointer;
+}

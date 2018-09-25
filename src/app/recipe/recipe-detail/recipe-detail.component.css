@@ -1,0 +1,26 @@
+.card {
+    max-width: 800px;
+    display: block;
+    margin: 10px auto 10px;
+    vertical-align:middle;
+}
+.recipe-button {
+    margin-top: 10px;
+}
+table {
+    width: 100%;
+    margin-top: 30px;
+    max-width: 700px;
+}
+mat-form-field {
+    font-size: 14px;
+    width: 40%;
+    max-width: 300px;
+    margin-top: 30px;
+}
+mat-paginator {
+    margin-top: 30px;
+}
+.mat-input-element:disabled {
+    color: rgba(0,0,0,.87);
+}

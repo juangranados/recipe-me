@@ -1,0 +1,12 @@
+.botones {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+.campos {
+    margin-top: 10px;
+}
+.spinner {
+    top: 50%;
+    transform: translate(-50%, -50%);
+    position: fixed;
+}

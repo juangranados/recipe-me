@@ -1,0 +1,24 @@
+<!--src/app/auth/login/login.component.html-->
+
+<!--Formulario principal-->
+<form fxLayout="column" fxLayoutGap="10px" fxLayoutAlign="center center" [formGroup] = "signinForm" (ngSubmit)="onSubmit()">
+    <!--Título-->
+    <h2 class="mat-display-1">¡Entra en Recipe Me!</h2 >
+    <!--Email-->
+    <mat-form-field hintLabel="Introduce un email válido.">
+        <input type="email" matInput placeholder="Tu email" formControlName="email">
+        <mat-error *ngIf="signinForm.get('email').hasError('required')">El email no puede estar vacío.</mat-error>
+        <mat-error *ngIf="!signinForm.get('email').hasError('required')">El email es inválido.</mat-error>
+    </mat-form-field>
+    <!--Contraseña-->
+    <mat-form-field hintLabel="Debe contener al menos 6 caracteres.">
+        <mat-hint *ngIf="signinForm.get('password').value?.length > 0" align="end">
+            {{ signinForm.get('password').value?.length }} caracteres.
+        </mat-hint>
+        <mat-error>La contraseña debe tener 6 caracteres como mínimo.</mat-error>
+        <input type="password" matInput placeholder="Tu contraseña" formControlName="password">
+    </mat-form-field>
+    <!--Botón de registro-->
+    <button *ngIf="!(isLoading$ | async)" type="submit" fxFlexAlign="center" mat-raised-button color="primary" [disabled]="signinForm.invalid">Entrar</button>
+    <mat-spinner *ngIf="isLoading$ | async"></mat-spinner>
+</form>

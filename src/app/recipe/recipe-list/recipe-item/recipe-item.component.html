@@ -1,0 +1,24 @@
+<!--src/app/recipe/recipe-list/recipe-item/recipe-item.component.html-->
+<!--Al hacer clic en el elemento se llama a la ruta /recipes pasándole el parámetro del índice de la receta-->
+<!--<div class="media border p-3 active" [routerLink]="[recipe.id]" routerLinkActive="selected">-->
+    <!--<div class="media-body align-self-center">-->
+        <!--<h5>{{recipe.recipeName}}</h5>-->
+        <!--{{recipe.recipeDescription}}-->
+    <!--</div>-->
+    <!--<img src="{{recipe.recipeImagePath}}" alt="{{recipe.recipeName}}" class="ml-3 rounded-circle image-overlay" style="width:60px;">-->
+<!--</div>-->
+<mat-card class="card">
+    <mat-card-header>
+        <mat-card-title>{{recipe.recipeName}}</mat-card-title>
+        <mat-card-subtitle>{{recipe.recipeDescription}}</mat-card-subtitle>
+    </mat-card-header>
+    <img mat-card-image src="{{recipe.recipeImagePath}}" alt="{{recipe.recipeName}}">
+    <mat-card-content>
+    </mat-card-content>
+    <mat-card-actions>
+        <button mat-button (click)="onView()">VER</button>
+        <button mat-button (click)="onEdit()">EDITAR</button>
+        <button mat-button (click)="onDelete()">ELIMINAR</button>
+    </mat-card-actions>
+</mat-card>
+

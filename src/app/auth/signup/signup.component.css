@@ -1,0 +1,22 @@
+/*src/app/auth/signup/signup.component.css*/
+.mat-form-field {
+  width: 300px;
+}
+.mat-display-1 {
+  margin-top: 20px;
+  text-align: center;
+}
+button {
+  margin: 10px auto;
+}
+section {
+  height: 100%;
+}
+.mat-checkbox {
+  text-align: left;
+  margin-left: 10px;
+}
+/*Para que el texto del checkbox sea multilineal en dispositivos móviles*/
+/deep/ .mat-checkbox-layout {
+    white-space: normal !important;
+}

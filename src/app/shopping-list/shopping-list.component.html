@@ -1,0 +1,83 @@
+<!--src/app/shopping-list/shopping-list.component.html-->
+<div class="mat-typography" >
+    <form class="edit-form" [formGroup] = "ingredientsForm" (ngSubmit)="onAddIngredient()">
+        <div class="campos" fxLayoutGap="5px">
+            <!--Nombre-->
+            <mat-form-field hintLabel="Ingrediente" fxFlex.xs="35">
+                <input type="text" matInput placeholder="Ingrediente" formControlName="ingredientName">
+                <mat-error *ngIf="ingredientsForm.get('ingredientName').hasError('required')">El nombre del ingrediente no puede estar vacío.</mat-error>
+            </mat-form-field>
+            <!--Descripción-->
+            <mat-form-field hintLabel="Cantidad" fxFlex.xs="20">
+                <input type="number" matInput placeholder="Cantidad" formControlName="ingredientAmount">
+                <mat-error *ngIf="ingredientsForm.get('ingredientAmount').hasError('required')">La cantidad no puede estar vacía.</mat-error>
+            </mat-form-field>
+            <!--Unidades-->
+            <mat-form-field hintLabel="Unidad" fxFlex.xs="25">
+                <mat-select placeholder="Unidad" [formControlName]="'ingredientUnit'">
+                    <mat-option *ngFor="let unit of units" [value]="unit">
+                        {{unit}}
+                    </mat-option>
+                </mat-select>
+                <mat-error *ngIf="ingredientsForm.get('ingredientUnit').hasError('required')">La unidad del ingrediente no puede estar vacía.</mat-error>
+            </mat-form-field>
+            <button fxFlex.xs="20" mat-icon-button type="button" (click)="onClearForm()">
+                <mat-icon>clear</mat-icon>
+            </button>
+        </div>
+        <div class="botones" fxLayout="row" fxLayoutAlign="start start" fxLayoutGap="5px">
+            <button mat-raised-button color="primary" type="submit" [disabled]="!ingredientsForm.valid">Añadir
+                <mat-icon>add_shopping_cart</mat-icon>
+            </button>
+            <button mat-raised-button color="accent" type="button" (click)="onDeleteShoppingList()">Borrar lista
+                <mat-icon>delete_forever</mat-icon>
+            </button>
+        </div>
+    </form>
+</div>
+
+<div *ngIf="isLoadingObservable" fxLayout="column" fxLayoutAlign="center center">
+    <mat-spinner class="spinner" *ngIf="isLoadingObservable | async"></mat-spinner>
+</div>
+<section fxLayout="column" [fxHide]="isLoadingObservable | async">
+    <!--Filtro de la tabla-->
+    <mat-form-field>
+        <!--Input con un listener de keyup para que salte con cada letra-->
+        <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Búsqueda">
+    </mat-form-field>
+    <!--Tabla-->
+    <table mat-table [dataSource]="dataSource" matSort>
+        <!--Columna nombre-->
+        <ng-container matColumnDef="ingredientName">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header> Nombre </th>
+            <td mat-cell *matCellDef="let element"> {{element.ingredientName}} </td>
+        </ng-container>
+        <!--Columna cantidad-->
+        <ng-container matColumnDef="ingredientAmount">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header> Cantidad </th>
+            <td mat-cell *matCellDef="let element"> {{element.ingredientAmount | number}} </td>
+        </ng-container>
+        <!--Columna unidad-->
+        <ng-container matColumnDef="ingredientUnit">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header> Unidades </th>
+            <td mat-cell *matCellDef="let element"> {{element.ingredientUnit}} </td>
+        </ng-container>
+        <!--Boton borrar-->
+        <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header></th>
+            <td mat-cell *matCellDef="let element">
+                <button mat-button (click)="onDeleteItem(element)">
+                    <mat-icon>delete</mat-icon>
+                </button>
+                <button mat-button (click)="onClickItem(element)">
+                    <mat-icon>edit</mat-icon>
+                </button>
+            </td>
+        </ng-container>
+        <!--Configuración de la tabla-->
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+    <!--Configuración de la paginación-->
+    <mat-paginator [pageSizeOptions]="[10, 25, 50, 100]"></mat-paginator>
+</section>

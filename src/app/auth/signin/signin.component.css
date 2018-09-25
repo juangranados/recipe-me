@@ -1,0 +1,11 @@
+/*src/app/auth/signup/signup.component.css*/
+.mat-form-field {
+  width: 300px;
+}
+.mat-display-1 {
+  margin-top: 20px;
+  text-align: center;
+}
+button {
+    margin: 10px auto;
+}

@@ -1,0 +1,30 @@
+<div class="mat-typography">
+    <div fxLayout="row wrap">
+        <mat-card class="card" routerLink="/recipes">
+            <mat-card-header>
+                <div mat-card-avatar>
+                    <mat-icon aria-label="Visita el libro de recetas">fastfood</mat-icon>
+                </div>
+                <mat-card-title>Libro de recetas</mat-card-title>
+                <mat-card-subtitle>
+                    Crea y modifica tus recetas favoritas.<br/>
+                    Envía los ingredientes a la lista de la compra.
+                </mat-card-subtitle>
+            </mat-card-header>
+            <img mat-card-image src="{{recipesImage}}" alt="Libro de recetas">
+        </mat-card>
+        <mat-card class="card" routerLink="/shopping-list">
+            <mat-card-header>
+                <div mat-card-avatar>
+                    <mat-icon aria-label="Visita la lista de la compra">format_list_bulleted</mat-icon>
+                </div>
+                <mat-card-title>Lista de la compra</mat-card-title>
+            <mat-card-subtitle>
+                Lista de los ingredientes necesarios para tus recetas.<br/>
+                ¡Apúntalo todo y que no se te olvide nada!
+            </mat-card-subtitle>
+            </mat-card-header>
+            <img mat-card-image src="{{shoppingListImage}}" alt="Lista de la compra">
+        </mat-card>
+    </div>
+</div>

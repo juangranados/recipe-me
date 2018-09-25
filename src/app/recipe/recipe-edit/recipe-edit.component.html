@@ -1,0 +1,64 @@
+<!--src/app/recipe/recipe-edit/recipe-edit.component.html-->
+<!--Formulario-->
+<form class="mat-typography edit-form" fxLayout="column" fxLayoutGap="10px" fxLayoutAlign="center" fxFlex.gt-sm="50" [formGroup] = "recipeForm" (ngSubmit)="onSubmit()">
+    <!--Botones-->
+    <div fxLayout="row" fxLayoutGap ="20px" class="botones">
+        <button mat-raised-button color="primary" [disabled]="!recipeForm.valid" type="submit">Guardar</button>
+        <button mat-raised-button color="warn" (click)="onCancel()">Cancelar</button>
+    </div>
+    <!--Inputs---------------------------------------------------->
+    <!--Nombre-->
+    <mat-form-field hintLabel="Nombre de la receta">
+        <input type="text" matInput placeholder="Nombre" formControlName="recipeName">
+        <mat-error *ngIf="recipeForm.get('recipeName').hasError('required')">El nombre no puede estar vacío.</mat-error>
+    </mat-form-field>
+    <!--Descripción-->
+    <mat-form-field hintLabel="Descripción de la receta">
+        <input type="text" matInput placeholder="Descripción" formControlName="recipeDescription">
+        <mat-error *ngIf="recipeForm.get('recipeDescription').hasError('required')">La descripción no puede estar vacía.</mat-error>
+    </mat-form-field>
+    <!--Imagen-->
+    <mat-form-field hintLabel="Ruta de la receta">
+        <input type="text" matInput placeholder="Ruta" formControlName="recipeImagePath">
+        <mat-error *ngIf="recipeForm.get('recipeImagePath').hasError('required')">La ruta no puede estar vacía.</mat-error>
+    </mat-form-field>
+    <!--Vista previa de la imagen-->
+    <img src="{{recipeForm.get('recipeImagePath').value}}" alt="La vista previa de la imagen de la receta no puede ser mostrada">
+    <!--Instrucciones de la receta-->
+    <mat-form-field hintLabel="Instrucciones de la receta">
+        <textarea type="text" matInput placeholder="Instrucciones" formControlName="recipeInstructions"
+                  matTextareaAutosize matAutosizeMinRows=1 matAutosizeMaxRows=10></textarea>
+        <mat-error *ngIf="recipeForm.get('recipeInstructions').hasError('required')">La ruta no puede estar vacía.</mat-error>
+    </mat-form-field>
+
+    <!--Ingredientes-->
+    <div formArrayName="ingredients" fxLayout="column">
+        <h3>Ingredientes</h3>
+        <div
+                *ngFor="let ingredient of recipeForm.get('ingredients')['controls']; let i = index"
+                [formGroupName]="i"
+        >
+            <div fxLayoutAlign.gt-xs="space-around" fxLayoutGap.gt-xs="5px">
+                <mat-form-field fxFlex="40">
+                    <input type="text" matInput placeholder="Ingrediente" formControlName="ingredientName" required>
+                </mat-form-field>
+                <!--<input class="form-control" type="text" formControlName="ingredientName" required>-->
+                <mat-form-field fxFlex="20">
+                    <input type="number" matInput placeholder="Cantidad" formControlName="ingredientAmount" required>
+                </mat-form-field>
+                <mat-form-field fxFlex="30" >
+                    <mat-select placeholder="Unidad" required [formControlName]="'ingredientUnit'">
+                        <mat-option *ngFor="let unit of units" [value]="unit">
+                            {{unit}}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <!--<input class="form-control float-left" type="number" formControlName="ingredientAmount" required>-->
+                <button fxFlex="10" mat-icon-button color="warn" type="button" (click)="onDeleteIngredient(i)">
+                    <mat-icon aria-label="Borrar ingrediente">delete</mat-icon>
+                </button>
+            </div>
+        </div>
+        <button mat-raised-button color="accent" type="button" (click)="onAddIngredient()">Añadir ingrediente</button>
+    </div>
+</form>

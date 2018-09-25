@@ -1,0 +1,14 @@
+<!--src/app/recipe/recipe-list/recipe-list.component.html-->
+<button mat-raised-button color="primary" routerLink="new">Nueva
+    <mat-icon>fastfood</mat-icon>
+</button>
+<div fxLayout="column" fxLayoutAlign="center center">
+    <mat-form-field>
+        <!--Input con un listener de keyup para que salte con cada letra-->
+        <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Búsqueda">
+    </mat-form-field>
+</div>
+<div fxLayout="row wrap" fxLayoutAlign="center" fxLayoutGap="10px">
+<app-recipe-item *ngFor="let recipe of recipesObservable | async;" [recipe]="recipe"></app-recipe-item>
+</div>
+<mat-paginator [pageSizeOptions]="[2, 5, 10, 25, 50, 100]"></mat-paginator>
