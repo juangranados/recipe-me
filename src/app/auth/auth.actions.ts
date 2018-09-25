@@ -1,7 +1,7 @@
 // src/app/auth/auth.actions.ts
 // Archivo que contiene las acciones posibles para el reducer que modifica la parte auth (autenticación) del store.
-import {Action} from '@ngrx/store';
-import {AuthModel, UserModel} from './auth.model';
+import { Action } from '@ngrx/store';
+import { UserLoginModel, UserModel, UserRegisterModel } from './auth.model';
 
 // 1.- Se definen las constantes que representan las acciones. Se sigue nomenclatura const NOMBRE_ACCIÓN = '[REDUCER] Nombre Acción'
 export const SET_AUTHENTICATED = '[Auth] Set Authenticated'; // Usuario autenticado correctamente.
@@ -15,7 +15,7 @@ export const REGISTER_SUCESSFUL = '[Auth] User Register Successful'; // Registro
 export const LOGIN_ERROR = '[Auth] User Login Error'; // Error al intentar el login.
 export const LOGOUT_ERROR = '[Auth] User Logout Error'; // Error al intentar el logout.
 export const REGISTER_ERROR = '[Auth] User Register Error'; // Error al intentar el registro.
-export const GET_AUTHENTICATION = '[Auth] Get Authentication';  // Obtener el estado de la autenticación.
+export const GET_AUTHENTICATION = '[Auth] Get Authentication'; // Obtener el estado de la autenticación.
 export const GET_AUTHENTICATION_ERROR = '[Auth] Get Authentication Error'; // Error al obtener el estado de la autenticación.
 
 // 2.-  Se exportan las acciones como clases para poder lanzar acciones invocándolas.
@@ -29,7 +29,7 @@ export class SetUnauthenticated implements Action {
 
 export class Login implements Action {
     readonly type = LOGIN;
-    constructor(public payload: AuthModel) {} // Datos de acceso.
+    constructor(public payload: UserLoginModel) {} // Datos de acceso.
 }
 
 export class Logout implements Action {
@@ -38,7 +38,7 @@ export class Logout implements Action {
 
 export class Register implements Action {
     readonly type = REGISTER;
-    constructor(public payload: AuthModel) {} // Datos de registro.
+    constructor(public payload: UserRegisterModel) {} // Datos de registro.
 }
 
 export class LoginSuccessful implements Action {
@@ -79,16 +79,16 @@ export class GetAuthenticationError implements Action {
 
 // 3.- Se exporta un tipo que puede ser de una de las clases definidas anteriormente.
 export type AuthActions =
-    SetAuthenticated |
-    SetUnauthenticated |
-    GetAuthentication |
-    GetAuthenticationError |
-    Login |
-    Logout |
-    Register |
-    LoginSuccessful |
-    LogoutSuccessful |
-    RegisterSuccessful |
-    LoginError |
-    LogoutError |
-    RegisterError;
+    | SetAuthenticated
+    | SetUnauthenticated
+    | GetAuthentication
+    | GetAuthenticationError
+    | Login
+    | Logout
+    | Register
+    | LoginSuccessful
+    | LogoutSuccessful
+    | RegisterSuccessful
+    | LoginError
+    | LogoutError
+    | RegisterError;

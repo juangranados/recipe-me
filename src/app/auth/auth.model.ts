@@ -1,7 +1,12 @@
 // src/app/auth/auth.model.ts
-export interface AuthModel {
+export interface UserLoginModel {
     email: string;
     password: string;
+}
+export interface UserRegisterModel {
+    email: string;
+    password: string;
+    birthDate: string;
 }
 
 export interface UserModel {

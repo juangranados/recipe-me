@@ -10,13 +10,16 @@ import { Router } from '@angular/router';
 import * as authActions from './auth.actions';
 import * as fromAuth from './auth.reducer';
 import { MessageService } from '../shared/message.service';
+import { AngularFirestore } from '@angular/fire/firestore';
 
 @Injectable()
 export class AuthEffects {
+  private birthDate;
   /**
    *
    * @param actions$: las clases con efectos siempre reciben un observable de tipo Action para filtrar las acciones.
    * @param AfAuth: instancia de la clase AngularFireAuth para manejar e interactuar con la autenticación de Firebase.
+   * @param angularFirestore
    * @param store: store de la parte auth para poder lanzar acciones.
    * @param messageService: instancia de la clase MessageService para mostrar mensajes al usuario.
    * @param router: instancia de la clase Router de Angular para poder navegar tras la autenticación o logout.
@@ -24,6 +27,7 @@ export class AuthEffects {
   constructor(
     private actions$: Actions,
     private AfAuth: AngularFireAuth,
+    private angularFirestore: AngularFirestore,
     private store: Store<fromAuth.State>,
     private messageService: MessageService,
     private router: Router
@@ -68,6 +72,7 @@ export class AuthEffects {
     .pipe(map((action: authActions.Register) => action.payload)) // Se recupera el payload
     .pipe(
       switchMap(authData => {
+        this.birthDate = authData.birthDate;
         // Se intenta crear el usuario en Firebase con las credenciales proporcionadas.
         // Se devuelve un observable que retornará los datos del usuario o un error.
         return from(
@@ -79,11 +84,21 @@ export class AuthEffects {
       })
     )
     .pipe(
-      map(() => {
-        // Registro correcto.
-        // Se registra la acción de registro correcto.
-        return new authActions.RegisterSuccessful();
-      }),
+      switchMap(userData => {
+        // Registro correcto. Se crea documento del usuario en firebase.
+        return from(
+          this.angularFirestore
+            .collection('users')
+            .doc(`${userData.user.uid}`)
+            .set({
+              email: userData.user.email,
+              birthDate: this.birthDate.toLocaleDateString('es-ES')
+            })
+        ); // Crear campo
+      })
+    )
+    .pipe(
+      map(() => new authActions.RegisterSuccessful()),
       catchError((error, caught) => {
         // Error de registro.
         this.messageService.setMessage('Error de registro: ' + error.message); // Mensaje de error por pantalla.
