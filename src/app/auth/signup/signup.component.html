@@ -42,7 +42,7 @@
     <!--Errores del formulario-->
     <mat-error *ngIf="signupForm.hasError('passwordMismatch')">Las contraseñas deben ser iguales.</mat-error>
     <!--Botón de registro-->
-    <button *ngIf="!(isLoading | async)" type="submit" fxFlexAlign="center" mat-raised-button color="primary" [disabled]="signupForm.invalid">Registrarse</button>
+    <button *ngIf="!(isLoading$ | async)" type="submit" fxFlexAlign="center" mat-raised-button color="primary" [disabled]="signupForm.invalid">Registrarse</button>
     <div fxLayout="column" fxLayoutAlign="center center">
         <mat-spinner class="spinner" *ngIf="isLoading$ | async"></mat-spinner>
     </div>
