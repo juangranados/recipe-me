@@ -6,7 +6,7 @@
 <div *ngIf="!(recipesObservable | async) && !(isLoadingObservable | async)" >
     <h3>Todavía no tienes recetas en la lista ¡Añade alguna con el botón superior!</h3>
 </div>
-<section [fxHide]="(recipesObservable | async).length === 0">
+<section [fxHide]="!(recipesObservable | async)">
     <div fxLayout="column" fxLayoutAlign="center center">
         <mat-form-field>
             <!--Input con un listener de keyup para que salte con cada letra-->

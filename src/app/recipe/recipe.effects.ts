@@ -58,7 +58,7 @@ export class RecipeEffects {
                     .subscribe(query => {
                         if (query.size) {
                             this.store.dispatch(
-                                new shoppingListActions.ShoppingListStartLoading() // Se cambia el estado para reflejar que se inicia una operación asíncrona en Firebase.
+                                new recipeActions.RecipeStartLoading() // Se cambia el estado para reflejar que se inicia una operación asíncrona en Firebase.
                             );
                         }
                     });
