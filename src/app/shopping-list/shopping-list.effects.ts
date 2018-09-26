@@ -40,10 +40,7 @@ export class ShoppingListEffects {
         )
         .pipe(
             switchMap(() => {
-                return this.store.pipe(
-                    select(fromAuth.getUid),
-                    take(1)
-                );
+                return this.store.pipe(select(fromAuth.getUid));
             })
         )
         .pipe(
@@ -51,7 +48,7 @@ export class ShoppingListEffects {
                 // Se devuelve un observable nuevo que informa de los cambios que se producen sobre una colección de Cloud Firestore.
                 // Al inicio, devuelve todos los elementos de la colección como added.
                 // Conforme se vayan produciendo modificaciones irá devolviendo los cambios en los documentos de la colección.
-                uid => {
+                (uid: string) => {
                     // Se comprueba si la colección contiene datos para indicar que se empieza la carga.
                     this.afs
                         .collection<Ingredient>(`users/${uid}/shopping-list`)

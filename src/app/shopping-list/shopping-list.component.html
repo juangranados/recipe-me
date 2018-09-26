@@ -35,11 +35,16 @@
         </div>
     </form>
 </div>
-
+<!--Spinner-->
 <div *ngIf="isLoadingObservable" fxLayout="column" fxLayoutAlign="center center">
     <mat-spinner class="spinner" *ngIf="isLoadingObservable | async"></mat-spinner>
 </div>
-<section fxLayout="column" [fxHide]="isLoadingObservable | async">
+<!--Mensaje de no hay ingredientes-->
+<div *ngIf="this.dataSource.data.length === 0 && !(isLoadingObservable | async)" >
+    <h3>Todavía no tienes ingredientes en la lista ¡Añade alguno en el menú superior!</h3>
+</div>
+<!--Tabla de ingredientes-->
+<section fxLayout="column" [fxHide]="(isLoadingObservable | async) || (this.dataSource.data.length === 0)">
     <!--Filtro de la tabla-->
     <mat-form-field>
         <!--Input con un listener de keyup para que salte con cada letra-->
