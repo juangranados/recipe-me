@@ -1,12 +1,12 @@
 // src/app/recipe/recipe-detail/recipe-detail.component.ts
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { Router } from '@angular/router';
+import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
+import { ActivatedRoute, Params, Router } from '@angular/router';
 import {
     CloudFirestoreService,
     States
 } from '../../shared/cloud-firestore.service';
 import { addIngredient, Ingredient } from '../../shared/ingredient.model';
-import { RecipeId } from '../recipe.model';
+import { Recipe, RecipeId } from '../recipe.model';
 import * as fromRecipe from '../recipe.reducer';
 import { select, Store } from '@ngrx/store';
 import { take } from 'rxjs/operators';
@@ -18,14 +18,16 @@ import {
 } from '@angular/material';
 import { ConfirmDialogComponent } from '../../shared/confirm-dialog/confirm-dialog.component';
 import * as fromAuth from '../../auth/auth.reducer';
+import { Subscription } from 'rxjs';
+import * as recipeActions from '../recipe.actions';
 
 @Component({
     selector: 'app-recipe-detail',
     templateUrl: './recipe-detail.component.html',
     styleUrls: ['./recipe-detail.component.css']
 })
-export class RecipeDetailComponent implements OnInit {
-    recipe: RecipeId;
+export class RecipeDetailComponent implements OnInit, AfterViewInit {
+    recipe: Recipe;
     id: string;
     cloudFirestoreRecipePath: string;
     cloudFirestoreShoppinglistPath: string;
@@ -39,16 +41,19 @@ export class RecipeDetailComponent implements OnInit {
     paginator: MatPaginator; // Acceso a la directiva MatPaginator de la tabla.
     @ViewChild(MatSort)
     sort: MatSort; // Acceso a la directiva MatShort de la tabla.
+    routeSubscription: Subscription;
     /**
      * Constructor de la clase.
      * @param {CloudFirestoreService} cloudFirestoreService
      * @param {Router} router
+     * @param activatedRoute
      * @param store
      * @param dialog
      */
     constructor(
         private cloudFirestoreService: CloudFirestoreService,
         private router: Router,
+        private activatedRoute: ActivatedRoute,
         private store: Store<fromRecipe.State>,
         private dialog: MatDialog
     ) {}
@@ -64,17 +69,31 @@ export class RecipeDetailComponent implements OnInit {
             this.cloudFirestoreShoppinglistPath = `users/${uid}/shopping-list`;
         });
         // Almacenar la receta y los ingredientes en la tabla
-        this.store
-            .pipe(select(fromRecipe.getRecipeSelected))
-            .pipe(take(1))
-            .subscribe(recipe => {
-                this.recipe = recipe;
-                this.dataSource.data = recipe.ingredients;
-                // Se asignan la paginación y la ordenación al datasource de la tabla.
-                this.dataSource.paginator = this.paginator;
-                this.dataSource.sort = this.sort;
-            });
+        // Almacenar el id de la ruta
+        this.routeSubscription = this.activatedRoute.params.subscribe(
+            (params: Params) => {
+                this.id = params['id'];
+                // Se recupera la receta del store.
+                this.store
+                    .pipe(select(fromRecipe.getRecipeById(this.id)))
+                    .subscribe((data: Recipe) => {
+                        if (data) {
+                            this.recipe = { ...data };
+                            this.dataSource.data = this.recipe.ingredients;
+                        } else {
+                            this.router.navigate(['not-found']);
+                        }
+                    });
+            }
+        );
     }
+
+    ngAfterViewInit(): void {
+        // Se asignan la paginación y la ordenación al datasource de la tabla.
+        this.dataSource.paginator = this.paginator;
+        this.dataSource.sort = this.sort;
+    }
+
     /**
      * Método que aplica el filtro seleccionado al datasource de la tabla.
      * @param filterValue: valor del filtro.
@@ -118,13 +137,24 @@ export class RecipeDetailComponent implements OnInit {
                 if (result) {
                     // Borrar la receta
                     this.cloudFirestoreService.deleteElement(
-                        this.recipe.id,
+                        this.id,
                         this.cloudFirestoreRecipePath,
                         States.Recipes
                     );
                     this.router.navigate(['/recipes']);
                 }
             }
+        );
+    }
+    /**
+     * Informa al state de que se selecciona una receta
+     */
+    onSelect() {
+        this.store.dispatch(
+            new recipeActions.RecipeSelected({
+                ...this.recipe,
+                id: this.id
+            })
         );
     }
 }

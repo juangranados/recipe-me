@@ -3,10 +3,10 @@
     <mat-icon>fastfood</mat-icon>
 </button>
 <!--Mensaje de no hay ingredientes-->
-<div *ngIf="!(recipesObservable | async) && !(isLoadingObservable | async)" >
+<div *ngIf="!(recipeIds$ | async) && !(isLoading$ | async)" >
     <h3>Todavía no tienes recetas en la lista ¡Añade alguna con el botón superior!</h3>
 </div>
-<section [fxHide]="!(recipesObservable | async)">
+<section [fxHide]="!(recipeIds$ | async)">
     <div fxLayout="column" fxLayoutAlign="center center">
         <mat-form-field>
             <!--Input con un listener de keyup para que salte con cada letra-->
@@ -14,7 +14,7 @@
         </mat-form-field>
     </div>
     <div fxLayout="row wrap" fxLayoutAlign="center" fxLayoutGap="10px">
-    <app-recipe-item *ngFor="let recipe of recipesObservable | async;" [recipe]="recipe"></app-recipe-item>
+    <app-recipe-item *ngFor="let recipe of recipes$ | async;" [recipe]="recipe"></app-recipe-item>
     </div>
     <mat-paginator [pageSizeOptions]="[2, 5, 10, 25, 50, 100]"></mat-paginator>
 </section>

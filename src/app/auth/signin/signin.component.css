@@ -9,8 +9,6 @@
 button {
     margin: 10px auto;
 }
-.spinner {
-    top: 50%;
-    transform: translate(-50%, -50%);
-    position: fixed;
+mat-spinner {
+    margin-top: 10px;
 }

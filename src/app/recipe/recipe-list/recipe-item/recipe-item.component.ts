@@ -45,17 +45,13 @@ export class RecipeItemComponent implements OnInit {
             );
     }
 
-    onView() {
-        this.store.dispatch(new recipeActions.RecipeSelected(this.recipe));
-        this.router
-            .navigate(['view'], { relativeTo: this.activatedRoute })
-            .catch(error => console.log(error));
-    }
-    onEdit() {
-        this.store.dispatch(new recipeActions.RecipeSelected(this.recipe));
-        this.router
-            .navigate(['edit'], { relativeTo: this.activatedRoute })
-            .catch(error => console.log(error));
+    /**
+     * Informa al state de que se selecciona una receta
+     */
+    onSelect() {
+        this.store.dispatch(
+            new recipeActions.RecipeSelected({ ...this.recipe })
+        );
     }
     /**
      * Borra la receta de Cloud Firestore.

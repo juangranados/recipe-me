@@ -5,11 +5,12 @@ import {
     CloudFirestoreService,
     States
 } from '../../shared/cloud-firestore.service';
-import { RecipeId } from '../recipe.model';
+import { Recipe, RecipeId } from '../recipe.model';
 import * as fromRecipe from '../recipe.reducer';
 import { select, Store } from '@ngrx/store';
 import { take } from 'rxjs/operators';
 import * as fromAuth from '../../auth/auth.reducer';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-recipe-edit',
@@ -32,7 +33,11 @@ export class RecipeEditComponent implements OnInit {
     // Formulario
     recipeForm: FormGroup;
 
-    recipe: RecipeId;
+    recipe: Recipe;
+
+    id: string;
+
+    routeSubscription: Subscription;
 
     constructor(
         private activatedRoute: ActivatedRoute,
@@ -49,19 +54,29 @@ export class RecipeEditComponent implements OnInit {
                 (uid: string) =>
                     (this.cloudFirestorePath = `users/${uid}/recipes`)
             );
-        // Almacenar la receta
-        this.store
-            .pipe(select(fromRecipe.getRecipeSelected))
-            .pipe(take(1))
-            .subscribe(recipe => {
-                if (recipe) {
-                    this.recipe = recipe;
-                    this.editMode = true;
+        // Almacenar la receta y los ingredientes en la tabla
+        // Almacenar el id de la ruta
+        this.routeSubscription = this.activatedRoute.params.subscribe(
+            (params: Params) => {
+                this.id = params['id'];
+                if (this.id) {
+                    // Se recupera la receta del store.
+                    this.store
+                        .pipe(select(fromRecipe.getRecipeById(this.id)))
+                        .subscribe((data: Recipe) => {
+                            if (data) {
+                                this.recipe = { ...data };
+                                this.editMode = true;
+                                this.initForm();
+                            } else {
+                                this.router.navigate(['not-found']);
+                            }
+                        });
                 } else {
-                    this.editMode = false;
+                    this.initForm();
                 }
-                this.initForm();
-            });
+            }
+        );
     }
 
     /**
@@ -150,13 +165,13 @@ export class RecipeEditComponent implements OnInit {
             // Como el objeto que representa el formulario tiene exactamente el mismo tipo que la clase Recipe,
             // se puede agregar directamente recipeForm.value como una receta al array de RecipeService.
             this.cloudFirestoreService.editElement(
-                this.recipe.id,
+                this.id,
                 this.recipeForm.value,
                 this.cloudFirestorePath,
                 States.Recipes
             );
             // Se navega de vuelta a la receta
-            this.router.navigate(['/recipes'], {
+            this.router.navigate([`/recipes/${this.id}`], {
                 relativeTo: this.activatedRoute
             });
         } else {
@@ -184,7 +199,7 @@ export class RecipeEditComponent implements OnInit {
     onCancel() {
         if (this.editMode) {
             // Se navega de vuelta a la receta
-            this.router.navigate(['/recipes/view']);
+            this.router.navigate([`/recipes/${this.id}`]);
         } else {
             // Se navega de vuelta al índice
             this.router.navigate(['/recipes']);

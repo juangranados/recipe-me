@@ -52,8 +52,8 @@ export class ShoppingListComponent implements OnInit, AfterViewInit {
     // Propiedad para sincronizar el formulario de ingredientes
     ingredientsForm: FormGroup;
 
-    // Observable a la lista de ingredientes del store
-    isLoadingObservable: Observable<Boolean>;
+    isLoading$: Observable<boolean>; // Observable para mostrar o no el spinner
+    ingredients$: Observable<any>; // Observable para saber si hay ingredientes en el store.
 
     /**
      * Constructor de la clase del componente.
@@ -81,10 +81,13 @@ export class ShoppingListComponent implements OnInit, AfterViewInit {
         // Se inicializa el store con los ingredientes de la colección shopping-list recuperados de Cloud Firestore.
         this.store.dispatch(new shoppingListActions.ShoppingListSync());
 
-        // Suscripción a la propiedad isLoading del estado para mostrar el spinner.
-        this.isLoadingObservable = this.store.pipe(
+        // Observable isLoading del estado para mostrar el spinner.
+        this.isLoading$ = this.store.pipe(
             select(fromShoppingList.getIsLoading)
         );
+
+        // Observable a los ingredientes del store para mostrar o no la tabla.
+        this.ingredients$ = this.store.pipe(select(fromShoppingList.selectIds));
 
         // Se inicializa el observable de la lista de ingredientes para que la vista se pueda suscribir a él y mostrarlo por pantalla.
         // No es necesario cancelar la suscripción porque lo hará ngrx.

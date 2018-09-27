@@ -5,11 +5,9 @@
 .campos {
     margin-top: 10px;
 }
-.spinner {
-    top: 50%;
-    transform: translate(-50%, -50%);
-    position: fixed;
-}
 h3{
     text-align: center;
+}
+mat-spinner {
+    margin-top: 10px;
 }

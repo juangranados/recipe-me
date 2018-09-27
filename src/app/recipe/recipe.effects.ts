@@ -15,8 +15,6 @@ import * as recipeActions from './recipe.actions';
 import * as fromRecipe from './recipe.reducer';
 import * as fromAuth from '../auth/auth.reducer';
 import { Recipe } from './recipe.model';
-import { Ingredient } from '../shared/ingredient.model';
-import * as shoppingListActions from '../shopping-list/shopping-list.actions';
 
 // Las clase que contienen los efectos deben llevar el decorador @Injectable()
 @Injectable()
@@ -37,7 +35,7 @@ export class RecipeEffects {
     @Effect()
     query$: Observable<Action> = this.actions$ // Sintaxis por defecto.
         .pipe(
-            ofType(recipeActions.RECIPES_SYNC) // Sólo se ejecuta si la acción es de tipo RECIPES_SYNC.
+            ofType(recipeActions.RECIPE_START_SYNCING) // Sólo se ejecuta si la acción es de tipo RECIPES_SYNC.
         )
         .pipe(
             // Se recupera el UID del usuario del store
@@ -53,19 +51,21 @@ export class RecipeEffects {
 
                 // Se comprueba si la colección contiene datos para indicar que se empieza la carga.
                 this.afs
-                    .collection<Ingredient>(`users/${uid}/recipes`)
-                    .get()
-                    .subscribe(query => {
-                        if (query.size) {
+                    .collection<Recipe>(`users/${uid}/recipes`)
+                    .stateChanges()
+                    .pipe(take(1))
+                    .subscribe(data => {
+                        if (data.length) {
                             this.store.dispatch(
                                 new recipeActions.RecipeStartLoading() // Se cambia el estado para reflejar que se inicia una operación asíncrona en Firebase.
                             );
                         }
                     });
+                this.store.dispatch(new recipeActions.RecipeSynced());
                 return this.afs
                     .collection<Recipe>(`users/${uid}/recipes`)
-                    .stateChanges()
-                    .pipe(delay(2000)); // Delay de palisco para mostrar el spinner.
+                    .stateChanges();
+                // .pipe(delay(2000)); // Delay de palisco para mostrar el spinner.
                 // return this.afs.collection<Recipe>('recipes').stateChanges(); // Se devuelve un Observable que enviará todos los cambios que se producen en la colección.
             }),
             mergeMap(actions => actions), // Se agrupan todos los observables recibidos para procesar las acciones que devuelve Cloud Firestore.
@@ -96,7 +96,7 @@ export class RecipeEffects {
             catchError((error, caught) => {
                 // Si se produce un error, por ejemplo al salir de Firebase, la conexión se interrumpe al terminar el observable.
                 this.store.dispatch(
-                    new recipeActions.RecipeError(
+                    new recipeActions.RecipeErrorSync(
                         'Se ha interrumpido la conexión con Firebase para obtener las recetas. ' +
                             error.message
                     )

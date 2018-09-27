@@ -52,9 +52,10 @@ export class ShoppingListEffects {
                     // Se comprueba si la colección contiene datos para indicar que se empieza la carga.
                     this.afs
                         .collection<Ingredient>(`users/${uid}/shopping-list`)
-                        .get()
-                        .subscribe(query => {
-                            if (query.size) {
+                        .stateChanges()
+                        .pipe(take(1))
+                        .subscribe(data => {
+                            if (data.length) {
                                 this.store.dispatch(
                                     new shoppingListActions.ShoppingListStartLoading() // Se cambia el estado para reflejar que se inicia una operación asíncrona en Firebase.
                                 );
@@ -62,8 +63,8 @@ export class ShoppingListEffects {
                         });
                     return this.afs
                         .collection<Ingredient>(`users/${uid}/shopping-list`)
-                        .stateChanges()
-                        .pipe(delay(2000)); // Delay de palisco para mostrar el spinner.
+                        .stateChanges();
+                    // .pipe(delay(2000)); // Delay de palisco para mostrar el spinner.
                     // return this.afs.collection<Ingredient>('shopping-list').stateChanges(); // Se devuelve un Observable que enviará todos los cambios que se producen en la colección.
                 }
             ),

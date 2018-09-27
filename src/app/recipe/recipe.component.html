@@ -1,5 +1,6 @@
 <!-- src/app/recipe/recipe.component.html-->
-<div fxLayout="column" fxLayoutAlign="center center">
-    <mat-spinner class="spinner" *ngIf="isLoadingObservable | async"></mat-spinner>
+<div fxLayout="column" fxLayoutAlign="center center" *ngIf="(isLoading$ | async) == true">
+    <mat-spinner fxFlexAlign="center"></mat-spinner>
+    <h4 class="mat-typography">Cargando...</h4>
 </div>
-<router-outlet *ngIf="!(isLoadingObservable | async)"></router-outlet>
+<router-outlet *ngIf="(isLoading$ | async) == false"></router-outlet>

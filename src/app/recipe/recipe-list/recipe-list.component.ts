@@ -14,11 +14,12 @@ import { delay } from 'rxjs/operators';
     styleUrls: ['./recipe-list.component.css']
 })
 export class RecipeListComponent implements OnInit, OnDestroy {
-    recipesObservable: Observable<RecipeId[]>; // Observable para obtener los datos del datasource.
+    recipes$: Observable<RecipeId[]>; // Observable para obtener los datos del datasource.
+    recipeIds$: Observable<any>; // Observable para ver si hay recetas en el store.
     @ViewChild(MatPaginator)
     paginator: MatPaginator; // Acceso a la directiva MatPaginator de la tabla.
     dataSource = new MatTableDataSource<any>(); // Propiedad para que la tabla dibuje los datos.
-    isLoadingObservable: Observable<Boolean>; // Observable para saber si está cargando la app
+    isLoading$: Observable<Boolean>; // Observable para saber si está cargando la app
     /**
      * Constructor de la clase
      * @param store
@@ -32,9 +33,8 @@ export class RecipeListComponent implements OnInit, OnDestroy {
      */
     ngOnInit() {
         // Suscripción a la propiedad isLoading del estado para mostrar el spinner.
-        this.isLoadingObservable = this.store.pipe(
-            select(fromRecipe.getIsLoading)
-        );
+        this.isLoading$ = this.store.pipe(select(fromRecipe.getIsLoading));
+        this.recipeIds$ = this.store.pipe(select(fromRecipe.selectIds));
         this.store
             .pipe(
                 select(fromRecipe.selectAll),
@@ -42,11 +42,11 @@ export class RecipeListComponent implements OnInit, OnDestroy {
             )
             .subscribe(recipes => {
                 this.dataSource.data = recipes;
-                this.recipesObservable = this.dataSource.connect();
+                this.recipes$ = this.dataSource.connect();
             }); // Se copian todas las recetas al datasource
         this.dataSource.paginator = this.paginator; // Se añade un paginador al datasource.
         // se conecta el datasource al observable para recorrer las recetas.
-        this.store.dispatch(new recipeActions.RecipeSelected(null)); // No hay ninguna receta seleccionada.
+        this.store.dispatch(new recipeActions.NoRecipeSelected()); // No hay ninguna receta seleccionada.
     }
     /**
      * Método que aplica el filtro seleccionado al datasource de la tabla.

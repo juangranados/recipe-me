@@ -49,7 +49,7 @@
         <button mat-button mat-raised-button color="primary" [matMenuTriggerFor]="menu">Administrar</button>
         <mat-menu #menu="matMenu">
             <button mat-menu-item (click)="onSendToShoppingList()">Enviar a la lista</button>
-            <button mat-menu-item routerLink="/recipes/edit">Editar Receta</button>
+            <button mat-menu-item (click)="onSelect()" routerLink="edit">Editar Receta</button>
             <button mat-menu-item (click)="onDelete()">Eliminar receta</button>
         </mat-menu>
     </mat-card-actions>
