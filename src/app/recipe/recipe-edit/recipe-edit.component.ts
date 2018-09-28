@@ -1,5 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Params, Router } from '@angular/router';
+import {
+    ActivatedRoute,
+    NavigationEnd,
+    Params,
+    Router,
+    RouterEvent
+} from '@angular/router';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import {
     CloudFirestoreService,
@@ -10,6 +16,7 @@ import * as fromRecipe from '../recipe.reducer';
 import { select, Store } from '@ngrx/store';
 import { take } from 'rxjs/operators';
 import * as fromAuth from '../../auth/auth.reducer';
+import * as recipeActions from '../recipe.actions';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -39,6 +46,8 @@ export class RecipeEditComponent implements OnInit {
 
     routeSubscription: Subscription;
 
+    navigationSubscription: Subscription;
+
     constructor(
         private activatedRoute: ActivatedRoute,
         private router: Router,
@@ -47,6 +56,18 @@ export class RecipeEditComponent implements OnInit {
     ) {}
 
     ngOnInit() {
+        // Comprobar si las recetas del store están sicronizadas con Firebase.
+        // Se comprueba aquí para que funcione la navegación directa.
+        this.store
+            .pipe(select(fromRecipe.getIsSynced))
+            .pipe(take(1))
+            .subscribe((isSynced: boolean) => {
+                if (!isSynced) {
+                    // Se inicializa el store con los ingredientes de la colección
+                    // recipes recuperados de Cloud Firestore.
+                    this.store.dispatch(new recipeActions.RecipeStartSyncing());
+                }
+            });
         // Se especifica la ruta donde almacenar la lista de la compra.
         this.store
             .pipe(select(fromAuth.getUid))
@@ -69,7 +90,20 @@ export class RecipeEditComponent implements OnInit {
                                 this.editMode = true;
                                 this.initForm();
                             } else {
-                                this.router.navigate(['not-found']);
+                                // Se comprueba si no se ha encontrado debido a una recarga de la página o navegación directa, ya que el store
+                                // no se ha sincronizado con Firebase.
+                                this.navigationSubscription = this.router.events.subscribe(
+                                    (routerEvent: RouterEvent) => {
+                                        // If it is a NavigationEnd event re-initalise the component
+                                        if (
+                                            routerEvent instanceof NavigationEnd
+                                        ) {
+                                            this.getIdOrNotFound();
+                                        } else {
+                                            this.router.navigate(['not-found']);
+                                        }
+                                    }
+                                );
                             }
                         });
                 } else {
@@ -77,6 +111,29 @@ export class RecipeEditComponent implements OnInit {
                 }
             }
         );
+    }
+    /**
+     * Busca de nuevo el ID esperando a que se inicialice el store
+     */
+    getIdOrNotFound() {
+        this.store
+            .pipe(select(fromRecipe.getIsSynced))
+            .subscribe((isSynced: boolean) => {
+                if (isSynced) {
+                    this.store
+                        .pipe(select(fromRecipe.getRecipeById(this.id)))
+                        .pipe(take(1))
+                        .subscribe((data: Recipe) => {
+                            if (data) {
+                                this.recipe = { ...data };
+                                this.editMode = true;
+                                this.initForm();
+                            } else {
+                                this.router.navigate(['not-found']);
+                            }
+                        });
+                }
+            });
     }
 
     /**

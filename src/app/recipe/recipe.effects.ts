@@ -61,7 +61,6 @@ export class RecipeEffects {
                             );
                         }
                     });
-                this.store.dispatch(new recipeActions.RecipeSynced());
                 return this.afs
                     .collection<Recipe>(`users/${uid}/recipes`)
                     .stateChanges();
@@ -71,19 +70,26 @@ export class RecipeEffects {
             mergeMap(actions => actions), // Se agrupan todos los observables recibidos para procesar las acciones que devuelve Cloud Firestore.
             map(action => {
                 // Se procesa cada acción devuelta por Cloud Firestore para modificar el estado de la parte recipes.
-                // Se comprueba en el store si se ha marcado el inicio de la carga para pararlo, ya que se reciben los datos.
+                // Se comprueba en el store si se ha marcado el inicio de la carga para pararlo y la sincronización figura como no sincronizado, ya que se reciben los datos.
                 this.store
                     .pipe(
-                        select(fromRecipe.getIsLoading),
+                        select(fromRecipe.getStatus),
                         take(1)
                     ) // La suscripción coge sólo un elemento y se cierra.
-                    .subscribe((isLoading: Boolean) => {
-                        if (isLoading) {
-                            this.store.dispatch(
-                                new recipeActions.RecipeStopLoading()
-                            ); // Se informa al estado de que para la carga al recibirse los datos de Cloud Firestore.
+                    .subscribe(
+                        (status: { isSynced: boolean; isLoading: boolean }) => {
+                            if (status.isLoading) {
+                                this.store.dispatch(
+                                    new recipeActions.RecipeStopLoading()
+                                ); // Se informa al estado de que para la carga al recibirse los datos de Cloud Firestore.
+                            }
+                            if (!status.isSynced) {
+                                this.store.dispatch(
+                                    new recipeActions.RecipeSynced()
+                                ); // Se informa al estado de que para la carga al recibirse los datos de Cloud Firestore.
+                            }
                         }
-                    });
+                    );
                 // Se lanza una acción nueva por cada acción devuelta por Cloud Firestore.
                 return {
                     type: `[Recipes] Recipe ${action.type}`, // Tipo de la acción que devuelve Firebase: added | modified | removed

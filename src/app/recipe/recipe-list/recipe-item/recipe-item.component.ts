@@ -12,6 +12,7 @@ import {
 import { MatDialog } from '@angular/material';
 import { ConfirmDialogComponent } from '../../../shared/confirm-dialog/confirm-dialog.component';
 import * as fromAuth from '../../../auth/auth.reducer';
+import { take } from 'rxjs/operators';
 
 @Component({
     selector: 'app-recipe-item',

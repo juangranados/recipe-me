@@ -76,6 +76,7 @@ export function recipeReducer(
                 ids: state.ids,
                 entities: state.entities,
                 isLoading: state.isLoading,
+                isSynced: state.isSynced,
                 recipeSelected: state.recipeSelected
             });
 
@@ -90,6 +91,7 @@ export function recipeReducer(
                     ids: state.ids,
                     entities: state.entities,
                     isLoading: state.isLoading,
+                    isSynced: state.isSynced,
                     recipeSelected: state.recipeSelected
                 }
             );
@@ -100,6 +102,7 @@ export function recipeReducer(
                 ids: state.ids,
                 entities: state.entities,
                 isLoading: state.isLoading,
+                isSynced: state.isSynced,
                 recipeSelected: state.recipeSelected
             });
         // Para acciones que no modifican el estado.
@@ -130,6 +133,13 @@ export const getIsLoading = createSelector(
     getRecipeState,
     (state: State) => state.isLoading
 ); // Selector de isLoading
+export const getIsSynced = createSelector(
+    getRecipeState,
+    (state: State) => state.isSynced
+); // Selector de isSynced
+export const getStatus = createSelector(getRecipeState, (state: State) => {
+    return { isSynced: state.isSynced, isLoading: state.isLoading };
+}); // Selector de isSynced e isLoading
 export const getRecipeSelected = createSelector(
     getRecipeState,
     (state: State) => state.recipeSelected

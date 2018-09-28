@@ -4,6 +4,7 @@ import { select, Store } from '@ngrx/store';
 import * as fromRecipe from './recipe.reducer';
 import * as recipeActions from './recipe.actions';
 import { Observable } from 'rxjs';
+import { take } from 'rxjs/operators';
 
 @Component({
     selector: 'app-recipe',
@@ -18,8 +19,17 @@ export class RecipeComponent implements OnInit {
      */
     constructor(private store: Store<fromRecipe.State>) {}
     ngOnInit() {
-        // Se inicializa el store con los ingredientes de la colección recipes recuperados de Cloud Firestore.
-        this.store.dispatch(new recipeActions.RecipeStartSyncing());
+        // Comprobar si las recetas del store están sicronizadas con Firebase.
+        this.store
+            .pipe(select(fromRecipe.getIsSynced))
+            .pipe(take(1))
+            .subscribe((isSynced: boolean) => {
+                if (!isSynced) {
+                    // Se inicializa el store con los ingredientes de la colección
+                    // recipes recuperados de Cloud Firestore.
+                    this.store.dispatch(new recipeActions.RecipeStartSyncing());
+                }
+            });
 
         // Suscripción a la propiedad isLoading del estado para mostrar el spinner.
         this.isLoading$ = this.store.pipe(select(fromRecipe.getIsLoading));

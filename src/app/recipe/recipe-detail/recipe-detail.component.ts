@@ -1,6 +1,18 @@
 // src/app/recipe/recipe-detail/recipe-detail.component.ts
-import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
-import { ActivatedRoute, Params, Router } from '@angular/router';
+import {
+    AfterViewInit,
+    Component,
+    OnDestroy,
+    OnInit,
+    ViewChild
+} from '@angular/core';
+import {
+    ActivatedRoute,
+    NavigationEnd,
+    Params,
+    Router,
+    RouterEvent
+} from '@angular/router';
 import {
     CloudFirestoreService,
     States
@@ -9,7 +21,7 @@ import { addIngredient, Ingredient } from '../../shared/ingredient.model';
 import { Recipe, RecipeId } from '../recipe.model';
 import * as fromRecipe from '../recipe.reducer';
 import { select, Store } from '@ngrx/store';
-import { take } from 'rxjs/operators';
+import { delay, take } from 'rxjs/operators';
 import {
     MatDialog,
     MatPaginator,
@@ -26,8 +38,14 @@ import * as recipeActions from '../recipe.actions';
     templateUrl: './recipe-detail.component.html',
     styleUrls: ['./recipe-detail.component.css']
 })
-export class RecipeDetailComponent implements OnInit, AfterViewInit {
-    recipe: Recipe;
+export class RecipeDetailComponent implements OnInit, AfterViewInit, OnDestroy {
+    recipe: Recipe = {
+        recipeDescription: 'Cargando',
+        recipeImagePath: 'assets/recipes.jpg',
+        recipeInstructions: 'Cargando',
+        recipeName: 'Cargando',
+        ingredients: []
+    };
     id: string;
     cloudFirestoreRecipePath: string;
     cloudFirestoreShoppinglistPath: string;
@@ -42,6 +60,7 @@ export class RecipeDetailComponent implements OnInit, AfterViewInit {
     @ViewChild(MatSort)
     sort: MatSort; // Acceso a la directiva MatShort de la tabla.
     routeSubscription: Subscription;
+    navigationSubscription: Subscription;
     /**
      * Constructor de la clase.
      * @param {CloudFirestoreService} cloudFirestoreService
@@ -68,6 +87,7 @@ export class RecipeDetailComponent implements OnInit, AfterViewInit {
             this.cloudFirestoreRecipePath = `users/${uid}/recipes`;
             this.cloudFirestoreShoppinglistPath = `users/${uid}/shopping-list`;
         });
+
         // Almacenar la receta y los ingredientes en la tabla
         // Almacenar el id de la ruta
         this.routeSubscription = this.activatedRoute.params.subscribe(
@@ -76,12 +96,24 @@ export class RecipeDetailComponent implements OnInit, AfterViewInit {
                 // Se recupera la receta del store.
                 this.store
                     .pipe(select(fromRecipe.getRecipeById(this.id)))
+                    .pipe(take(1))
                     .subscribe((data: Recipe) => {
                         if (data) {
                             this.recipe = { ...data };
                             this.dataSource.data = this.recipe.ingredients;
                         } else {
-                            this.router.navigate(['not-found']);
+                            // Se comprueba si no se ha encontrado debido a una recarga de la página o navegación directa, ya que el store
+                            // no se ha sincronizado con Firebase.
+                            this.navigationSubscription = this.router.events.subscribe(
+                                (routerEvent: RouterEvent) => {
+                                    // If it is a NavigationEnd event re-initalise the component
+                                    if (routerEvent instanceof NavigationEnd) {
+                                        this.getIdOrNotFound();
+                                    } else {
+                                        this.router.navigate(['not-found']);
+                                    }
+                                }
+                            );
                         }
                     });
             }
@@ -94,6 +126,28 @@ export class RecipeDetailComponent implements OnInit, AfterViewInit {
         this.dataSource.sort = this.sort;
     }
 
+    /**
+     * Busca de nuevo el ID esperando a que se inicialice el store
+     */
+    getIdOrNotFound() {
+        this.store
+            .pipe(select(fromRecipe.getIsSynced))
+            .subscribe((isSynced: boolean) => {
+                if (isSynced) {
+                    this.store
+                        .pipe(select(fromRecipe.getRecipeById(this.id)))
+                        .pipe(take(1))
+                        .subscribe((data: Recipe) => {
+                            if (data) {
+                                this.recipe = { ...data };
+                                this.dataSource.data = this.recipe.ingredients;
+                            } else {
+                                this.router.navigate(['not-found']);
+                            }
+                        });
+                }
+            });
+    }
     /**
      * Método que aplica el filtro seleccionado al datasource de la tabla.
      * @param filterValue: valor del filtro.
@@ -156,5 +210,12 @@ export class RecipeDetailComponent implements OnInit, AfterViewInit {
                 id: this.id
             })
         );
+        // this.router.navigate([`/recipes/${this.id}/edit`]);
+    }
+
+    ngOnDestroy(): void {
+        if (this.navigationSubscription) {
+            this.navigationSubscription.unsubscribe();
+        }
     }
 }
