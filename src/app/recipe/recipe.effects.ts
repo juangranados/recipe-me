@@ -64,7 +64,7 @@ export class RecipeEffects {
                 return this.afs
                     .collection<Recipe>(`users/${uid}/recipes`)
                     .stateChanges();
-                // .pipe(delay(2000)); // Delay de palisco para mostrar el spinner.
+                // .pipe(delay(1000)); // Delay de palisco para mostrar el spinner.
                 // return this.afs.collection<Recipe>('recipes').stateChanges(); // Se devuelve un Observable que enviará todos los cambios que se producen en la colección.
             }),
             mergeMap(actions => actions), // Se agrupan todos los observables recibidos para procesar las acciones que devuelve Cloud Firestore.

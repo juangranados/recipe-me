@@ -1,6 +1,10 @@
 <!--src/app/recipe/recipe-edit/recipe-edit.component.html-->
 <!--Formulario-->
 <form class="mat-typography edit-form" fxLayout="column" fxLayoutGap="10px" fxLayoutAlign="center" fxFlex.gt-sm="50" [formGroup] = "recipeForm" (ngSubmit)="onSubmit()">
+    <div fxLayout="column" fxLayoutAlign="center center" *ngIf="isLoading">
+        <mat-spinner fxFlexAlign="center"></mat-spinner>
+        <h4 class="mat-typography">Cargando...</h4>
+    </div>
     <!--Botones-->
     <div fxLayout="row" fxLayoutGap ="20px" class="botones">
         <button mat-raised-button color="primary" [disabled]="!recipeForm.valid" type="submit">Guardar</button>
