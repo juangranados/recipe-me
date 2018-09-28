@@ -14,7 +14,7 @@ import {
 import { Recipe, RecipeId } from '../recipe.model';
 import * as fromRecipe from '../recipe.reducer';
 import { select, Store } from '@ngrx/store';
-import { take } from 'rxjs/operators';
+import { delay, take } from 'rxjs/operators';
 import * as fromAuth from '../../auth/auth.reducer';
 import * as recipeActions from '../recipe.actions';
 import { Subscription } from 'rxjs';
@@ -46,8 +46,6 @@ export class RecipeEditComponent implements OnInit {
 
     routeSubscription: Subscription;
 
-    navigationSubscription: Subscription;
-
     constructor(
         private activatedRoute: ActivatedRoute,
         private router: Router,
@@ -56,6 +54,9 @@ export class RecipeEditComponent implements OnInit {
     ) {}
 
     ngOnInit() {
+        // Se inicia el formulario como si fuera una receta nueva, en el caso de edición
+        // se sobrescribirá al recuperar la receta.
+        this.initForm();
         // Comprobar si las recetas del store están sicronizadas con Firebase.
         // Se comprueba aquí para que funcione la navegación directa.
         this.store
@@ -90,24 +91,9 @@ export class RecipeEditComponent implements OnInit {
                                 this.editMode = true;
                                 this.initForm();
                             } else {
-                                // Se comprueba si no se ha encontrado debido a una recarga de la página o navegación directa, ya que el store
-                                // no se ha sincronizado con Firebase.
-                                this.navigationSubscription = this.router.events.subscribe(
-                                    (routerEvent: RouterEvent) => {
-                                        // If it is a NavigationEnd event re-initalise the component
-                                        if (
-                                            routerEvent instanceof NavigationEnd
-                                        ) {
-                                            this.getIdOrNotFound();
-                                        } else {
-                                            this.router.navigate(['not-found']);
-                                        }
-                                    }
-                                );
+                                this.getIdOrNotFound();
                             }
                         });
-                } else {
-                    this.initForm();
                 }
             }
         );
@@ -118,6 +104,7 @@ export class RecipeEditComponent implements OnInit {
     getIdOrNotFound() {
         this.store
             .pipe(select(fromRecipe.getIsSynced))
+            .pipe(delay(0))
             .subscribe((isSynced: boolean) => {
                 if (isSynced) {
                     this.store

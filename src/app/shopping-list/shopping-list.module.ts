@@ -13,15 +13,15 @@ import { FlexLayoutModule } from '@angular/flex-layout';
 import { ConfirmDialogComponent } from '../shared/confirm-dialog/confirm-dialog.component';
 
 @NgModule({
-  imports: [
-    ShoppingListRoutingModule,
-    CommonModule,
-    ReactiveFormsModule,
-    MaterialModule, // Angular Material
-    FlexLayoutModule, // Angular Flex
-    StoreModule.forFeature('shoppingList', shoppingListReducer), // Reducer de shopping-list
-    EffectsModule.forFeature([ShoppingListEffects]) // Efectos de shopping-list
-  ],
-  declarations: [ShoppingListComponent]
+    imports: [
+        ShoppingListRoutingModule,
+        CommonModule,
+        ReactiveFormsModule,
+        MaterialModule, // Angular Material
+        FlexLayoutModule, // Angular Flex
+        StoreModule.forFeature('shoppingList', shoppingListReducer), // Reducer de shopping-list
+        EffectsModule.forFeature([ShoppingListEffects]) // Efectos de shopping-list
+    ],
+    declarations: [ShoppingListComponent]
 })
 export class ShoppingListModule {}

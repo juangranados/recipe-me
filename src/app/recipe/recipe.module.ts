@@ -16,22 +16,22 @@ import { MaterialModule } from '../material/material.module';
 import { FlexLayoutModule } from '@angular/flex-layout';
 
 @NgModule({
-  imports: [
-    CommonModule, // Directivas de Angular.
-    RecipeRoutingModule, // Módulo de rutas para este módulo.
-    ReactiveFormsModule, // Formularios reactivos.
-    MaterialModule, // Angular Material
-    FlexLayoutModule,
-    StoreModule.forFeature('recipes', recipeReducer), // Reducer de recipe.
-    EffectsModule.forFeature([RecipeEffects]) // Efectos de recipe.
-  ],
-  declarations: [
-    // Componentes que administran las recetas.
-    RecipeComponent,
-    RecipeListComponent,
-    RecipeDetailComponent,
-    RecipeItemComponent,
-    RecipeEditComponent
-  ]
+    imports: [
+        CommonModule, // Directivas de Angular.
+        RecipeRoutingModule, // Módulo de rutas para este módulo.
+        ReactiveFormsModule, // Formularios reactivos.
+        MaterialModule, // Angular Material
+        FlexLayoutModule,
+        StoreModule.forFeature('recipes', recipeReducer), // Reducer de recipe.
+        EffectsModule.forFeature([RecipeEffects]) // Efectos de recipe.
+    ],
+    declarations: [
+        // Componentes que administran las recetas.
+        RecipeComponent,
+        RecipeListComponent,
+        RecipeDetailComponent,
+        RecipeItemComponent,
+        RecipeEditComponent
+    ]
 })
 export class RecipeModule {}

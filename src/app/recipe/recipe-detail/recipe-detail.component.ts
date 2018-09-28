@@ -38,7 +38,7 @@ import * as recipeActions from '../recipe.actions';
     templateUrl: './recipe-detail.component.html',
     styleUrls: ['./recipe-detail.component.css']
 })
-export class RecipeDetailComponent implements OnInit, AfterViewInit, OnDestroy {
+export class RecipeDetailComponent implements OnInit, AfterViewInit {
     recipe: Recipe = {
         recipeDescription: 'Cargando',
         recipeImagePath: 'assets/recipes.jpg',
@@ -60,7 +60,6 @@ export class RecipeDetailComponent implements OnInit, AfterViewInit, OnDestroy {
     @ViewChild(MatSort)
     sort: MatSort; // Acceso a la directiva MatShort de la tabla.
     routeSubscription: Subscription;
-    navigationSubscription: Subscription;
     /**
      * Constructor de la clase.
      * @param {CloudFirestoreService} cloudFirestoreService
@@ -102,18 +101,7 @@ export class RecipeDetailComponent implements OnInit, AfterViewInit, OnDestroy {
                             this.recipe = { ...data };
                             this.dataSource.data = this.recipe.ingredients;
                         } else {
-                            // Se comprueba si no se ha encontrado debido a una recarga de la página o navegación directa, ya que el store
-                            // no se ha sincronizado con Firebase.
-                            this.navigationSubscription = this.router.events.subscribe(
-                                (routerEvent: RouterEvent) => {
-                                    // If it is a NavigationEnd event re-initalise the component
-                                    if (routerEvent instanceof NavigationEnd) {
-                                        this.getIdOrNotFound();
-                                    } else {
-                                        this.router.navigate(['not-found']);
-                                    }
-                                }
-                            );
+                            this.getIdOrNotFound();
                         }
                     });
             }
@@ -132,6 +120,7 @@ export class RecipeDetailComponent implements OnInit, AfterViewInit, OnDestroy {
     getIdOrNotFound() {
         this.store
             .pipe(select(fromRecipe.getIsSynced))
+            .pipe(delay(0))
             .subscribe((isSynced: boolean) => {
                 if (isSynced) {
                     this.store
@@ -211,11 +200,5 @@ export class RecipeDetailComponent implements OnInit, AfterViewInit, OnDestroy {
             })
         );
         // this.router.navigate([`/recipes/${this.id}/edit`]);
-    }
-
-    ngOnDestroy(): void {
-        if (this.navigationSubscription) {
-            this.navigationSubscription.unsubscribe();
-        }
     }
 }
