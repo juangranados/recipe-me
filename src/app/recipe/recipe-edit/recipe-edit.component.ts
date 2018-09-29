@@ -46,6 +46,8 @@ export class RecipeEditComponent implements OnInit {
 
     routeSubscription: Subscription;
 
+    isLoading = false;
+
     constructor(
         private activatedRoute: ActivatedRoute,
         private router: Router,
@@ -92,6 +94,7 @@ export class RecipeEditComponent implements OnInit {
                                 this.initForm();
                             } else {
                                 this.getIdOrNotFound();
+                                this.isLoading = true;
                             }
                         });
                 }
@@ -115,6 +118,7 @@ export class RecipeEditComponent implements OnInit {
                                 this.recipe = { ...data };
                                 this.editMode = true;
                                 this.initForm();
+                                this.isLoading = false;
                             } else {
                                 this.router.navigate(['not-found']);
                             }

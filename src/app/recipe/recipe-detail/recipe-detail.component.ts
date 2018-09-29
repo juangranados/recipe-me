@@ -60,6 +60,7 @@ export class RecipeDetailComponent implements OnInit, AfterViewInit {
     @ViewChild(MatSort)
     sort: MatSort; // Acceso a la directiva MatShort de la tabla.
     routeSubscription: Subscription;
+    isLoading = false;
     /**
      * Constructor de la clase.
      * @param {CloudFirestoreService} cloudFirestoreService
@@ -101,6 +102,7 @@ export class RecipeDetailComponent implements OnInit, AfterViewInit {
                             this.recipe = { ...data };
                             this.dataSource.data = this.recipe.ingredients;
                         } else {
+                            this.isLoading = true;
                             this.getIdOrNotFound();
                         }
                     });
@@ -130,6 +132,7 @@ export class RecipeDetailComponent implements OnInit, AfterViewInit {
                             if (data) {
                                 this.recipe = { ...data };
                                 this.dataSource.data = this.recipe.ingredients;
+                                this.isLoading = false;
                             } else {
                                 this.router.navigate(['not-found']);
                             }

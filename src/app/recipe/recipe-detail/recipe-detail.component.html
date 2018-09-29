@@ -2,6 +2,10 @@
 <button class="recipe-button" mat-raised-button color="primary" routerLink="/recipes">Volver
     <mat-icon>fastfood</mat-icon>
 </button>
+<div fxLayout="column" fxLayoutAlign="center center" *ngIf="isLoading">
+    <mat-spinner fxFlexAlign="center"></mat-spinner>
+    <h4 class="mat-typography">Cargando...</h4>
+</div>
 <mat-card class="card">
     <mat-card-header>
         <mat-card-title>{{recipe.recipeName}}</mat-card-title>
