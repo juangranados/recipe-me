@@ -1,0 +1,18 @@
+<!--<input type="file" (change)="uploadFile($event)" />-->
+<!--<div>{{ uploadPercent | async }}</div>-->
+<!--<a [href]="downloadURL | async">{{ downloadURL | async }}</a>-->
+<div fxLayout="column" fxLayoutAlign="center center">
+
+    <img style="height: 400px; width: 400px;" src="{{downloadURL | async}}">
+    <p>{{downloadURL | async}}</p>
+
+    <input #fileInput type="file" (change)="uploadFile($event)" style="display:none;" />
+    <button mat-raised-button color="primary" (click)="fileInput.click()">Seleccionar Imagen</button>
+
+    <mat-progress-spinner
+            [fxHide]="(uploadPercent | async) === 100"
+            color="primary"
+            mode="determinate"
+            [value]="uploadPercent | async">
+    </mat-progress-spinner>
+</div>

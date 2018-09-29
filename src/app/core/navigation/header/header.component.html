@@ -21,6 +21,9 @@
       <li *ngIf="isAuthenticated$ | async">
         <a routerLink="/shopping-list">Lista</a>
       </li>
+        <li *ngIf="isAuthenticated$ | async">
+            <a routerLink="/profile">Perfil</a>
+        </li>
       <li *ngIf="isAuthenticated$ | async" (click)="onLogout()">
         <a routerLink="/sign-in">Salir</a>
       </li>

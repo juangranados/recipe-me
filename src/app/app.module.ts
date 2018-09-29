@@ -23,7 +23,8 @@ import { AuthEffects } from './auth/auth.effects';
 import { ConfirmDialogComponent } from './shared/confirm-dialog/confirm-dialog.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialModule } from './material/material.module';
-import { CustomSerializer } from './routing/router-serializer'; // Efectos de auth.
+import { CustomSerializer } from './routing/router-serializer';
+import { AngularFireStorageModule } from '@angular/fire/storage';
 
 @NgModule({
     declarations: [AppComponent, ConfirmDialogComponent],
@@ -43,7 +44,8 @@ import { CustomSerializer } from './routing/router-serializer'; // Efectos de au
         StoreRouterConnectingModule.forRoot({ stateKey: 'router' }), // Añade el router al store con nombre router.
         AngularFireAuthModule, // imports firebase/auth, only needed for auth features.
         AngularFirestoreModule.enablePersistence(), // imports firebase/firestore, only needed for database features
-        AngularFireModule.initializeApp(environment.firebase) // Inicializa Firebase
+        AngularFireModule.initializeApp(environment.firebase), // Inicializa Firebase
+        AngularFireStorageModule // Modulo de almacenamiento.
     ],
     entryComponents: [ConfirmDialogComponent], // Para poder mostrar el diálogo en otros componentes.
     providers: [{ provide: RouterStateSerializer, useClass: CustomSerializer }],
