@@ -1,9 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { AngularFireStorage } from '@angular/fire/storage';
 import { Observable } from 'rxjs';
-import { finalize, take } from 'rxjs/operators';
+import { catchError, finalize, take } from 'rxjs/operators';
 import { select, Store } from '@ngrx/store';
 import * as fromAuth from '../auth/auth.reducer';
+import * as fromProfile from './profile.reducer';
+import * as profileActions from './profile.actions';
 
 @Component({
     selector: 'app-profile',
@@ -13,17 +15,23 @@ import * as fromAuth from '../auth/auth.reducer';
 export class ProfileComponent implements OnInit {
     uploadPercent: Observable<number>;
     downloadURL: Observable<string>;
-    profileImagePath = `28JZii1qSURWIm5JfmGwC2v2STg1/profile/profile.png`;
+    profileImage;
     uid: string;
     constructor(
         private storage: AngularFireStorage,
-        private store: Store<fromAuth.State>
+        private store: Store<fromProfile.State>
     ) {}
 
     ngOnInit(): void {
-        this.store
-            .pipe(select(fromAuth.getUid))
-            .subscribe((uid: string) => (this.uid = uid));
+        this.store.pipe(select(fromAuth.getUid)).subscribe((uid: string) => {
+            this.uid = uid;
+            if (uid) {
+                this.store.dispatch(new profileActions.GetProfileData());
+            }
+            this.profileImage = this.storage
+                .ref(`${this.uid}/profile/profile`)
+                .getDownloadURL();
+        });
     }
 
     uploadFile(event) {

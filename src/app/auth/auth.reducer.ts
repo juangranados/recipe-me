@@ -14,7 +14,7 @@ import {
     GET_AUTHENTICATION,
     GET_AUTHENTICATION_ERROR
 } from './auth.actions';
-import {createFeatureSelector, createSelector} from '@ngrx/store'; // Se importan los tipos de acción posibles para este reducer
+import { createFeatureSelector, createSelector } from '@ngrx/store'; // Se importan los tipos de acción posibles para este reducer
 
 // Parte del central state relativo a la autenticación. Este se incluirá en el central state dentro de app.reducer.ts
 export interface State {
@@ -29,7 +29,7 @@ const initialState: State = {
     isAuthenticated: false, // Al arrancar la aplicación no está autenticado.
     isLoading: false, // Al arrancar la aplicación no está cargando.
     uid: null,
-    email: null,
+    email: null
 };
 
 /**
@@ -43,7 +43,6 @@ export function authReducer(state = initialState, action: AuthActions) {
     switch (action.type) {
         case SET_AUTHENTICATED: // El tipo de acción es '[Auth] Set Authenticated'
             return {
-                ...state,
                 isAuthenticated: true,
                 isLoading: false,
                 uid: action.payload.uid,
@@ -55,7 +54,7 @@ export function authReducer(state = initialState, action: AuthActions) {
                 isAuthenticated: false,
                 isLoading: false,
                 uid: null,
-                email: null,
+                email: null
             }; // Se devuelve la porción del store que indica el usuario no está logueado en Firebase.
 
         case LOGIN_ERROR:
@@ -94,7 +93,16 @@ export const getAuthState = createFeatureSelector<State>('auth'); // Obtiene la 
 
 // Selector para obtener los elementos del estado.
 // Al ejecutar estos selectores se obtiene un observable que devuelve los cambios en el estado.
-export const getIsLoading = createSelector(getAuthState, (state: State) => state.isLoading);
-export const getEmail = createSelector(getAuthState, (state: State) => state.email);
+export const getIsLoading = createSelector(
+    getAuthState,
+    (state: State) => state.isLoading
+);
+export const getEmail = createSelector(
+    getAuthState,
+    (state: State) => state.email
+);
 export const getUid = createSelector(getAuthState, (state: State) => state.uid);
-export const getIsAuthenticated = createSelector(getAuthState, (state: State) => state.isAuthenticated);
+export const getIsAuthenticated = createSelector(
+    getAuthState,
+    (state: State) => state.isAuthenticated
+);
