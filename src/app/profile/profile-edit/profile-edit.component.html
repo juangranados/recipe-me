@@ -1,3 +1,32 @@
-<p>
-  profile-edit works!
-</p>
+<form *ngIf="isSynced" class="mat-typography edit-form" fxLayout="column" fxLayoutGap="10px" fxLayoutAlign="center" fxFlex.gt-sm="50" [formGroup] = "profileForm" (ngSubmit)="onSubmit()">
+    <div fxLayout="column" fxLayoutAlign="center center" *ngIf="isLoading">
+        <mat-spinner fxFlexAlign="center"></mat-spinner>
+        <h4 class="mat-typography">Cargando...</h4>
+    </div>
+    <!--Botones-->
+    <div fxLayout="row" fxLayoutGap ="20px" class="botones">
+        <button mat-raised-button color="primary" [disabled]="!profileForm.valid" type="submit">Guardar</button>
+        <button mat-raised-button color="warn" type="button" (click)="onCancel()">Cancelar</button>
+    </div>
+    <!--Inputs---------------------------------------------------->
+    <!--Nombre-->
+    <mat-form-field hintLabel="Introduce tu nombre">
+        <input type="text" matInput placeholder="Nombre" formControlName="name">
+        <mat-error *ngIf="profileForm.get('name').hasError('required')">El nombre no puede estar vacío.</mat-error>
+    </mat-form-field>
+
+    <mat-form-field hintLabel="Apellido">
+        <input type="text" matInput placeholder="Introduce tu apellido" formControlName="surname">
+        <mat-error *ngIf="profileForm.get('surname').hasError('required')">El apellido no puede estar vacío.</mat-error>
+    </mat-form-field>
+
+    <mat-form-field hintLabel="Fecha de nacimiento">
+        <input type="text" matInput placeholder="Introduce tu fecha de nacimiento" formControlName="birthDate">
+        <mat-error *ngIf="profileForm.get('birthDate').hasError('required')">La fecha de nacimiento no puede estar vacía.</mat-error>
+    </mat-form-field>
+
+    <img *ngIf="!isLoading" mat-card-image src="{{profileImage}}" alt="Foto de perfil">
+    <label for="files">Cambiar foto</label>
+    <input id="files" type="file" accept=".png,.jpg" formControlName="profileImage">
+
+</form>

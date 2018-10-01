@@ -2,10 +2,11 @@
 import {
     ERROR_GETTING_PROFILE_DATA,
     ERROR_SETTING_PROFILE_DATA,
-    GET_PROFILE_DATA,
+    SYNC_PROFILE_DATA,
     ProfileActions,
     SET_PROFILE_DATA,
-    STORE_PROFILE_DATA
+    STORE_PROFILE_DATA,
+    SYNCED_PROFILE_DATA
 } from './profile.actions';
 import { createFeatureSelector, createSelector } from '@ngrx/store';
 
@@ -14,6 +15,7 @@ export interface State {
     surname: string;
     birthDate: string;
     profileImage: string;
+    isSynced: boolean;
     isLoading: boolean;
     error?;
 }
@@ -23,7 +25,8 @@ export const initialState: State = {
     surname: null,
     birthDate: null,
     profileImage: 'default/profile/profile.png',
-    isLoading: false
+    isLoading: false,
+    isSynced: false
 };
 
 /**
@@ -35,10 +38,15 @@ export const initialState: State = {
 export function profileReducer(state = initialState, action: ProfileActions) {
     // Se modifica el store en función del tipo de acción recibida.
     switch (action.type) {
-        case GET_PROFILE_DATA:
+        case SYNC_PROFILE_DATA:
             return {
                 ...state,
                 isLoading: true
+            };
+        case SYNCED_PROFILE_DATA:
+            return {
+                ...state,
+                isSynced: true
             };
         case SET_PROFILE_DATA:
             return {
@@ -47,6 +55,7 @@ export function profileReducer(state = initialState, action: ProfileActions) {
             };
         case STORE_PROFILE_DATA:
             return {
+                ...state,
                 name: action.payload.name,
                 surname: action.payload.surname,
                 birthDate: action.payload.birthDate,
@@ -58,6 +67,7 @@ export function profileReducer(state = initialState, action: ProfileActions) {
             return {
                 ...state,
                 isLoading: false,
+                isSynced: false,
                 error: action.payload
             };
         default:
@@ -73,6 +83,11 @@ export const getProfileState = createFeatureSelector<State>('profile');
 export const getIsLoading = createSelector(
     getProfileState,
     (state: State) => state.isLoading
+); // Selector de isLoading
+
+export const getIsSynced = createSelector(
+    getProfileState,
+    (state: State) => state.isSynced
 ); // Selector de isLoading
 
 export const getProfile = createSelector(getProfileState, (state: State) => {

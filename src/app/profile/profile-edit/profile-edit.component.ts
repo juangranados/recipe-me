@@ -5,8 +5,8 @@ import { AngularFireStorage } from '@angular/fire/storage';
 import { select, Store } from '@ngrx/store';
 import * as fromProfile from '../profile.reducer';
 import * as fromAuth from '../../auth/auth.reducer';
-import * as profileActions from '../profile.actions';
 import { ProfileModel } from '../profile.model';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 @Component({
     selector: 'app-profile-edit',
@@ -14,12 +14,14 @@ import { ProfileModel } from '../profile.model';
     styleUrls: ['./profile-edit.component.css']
 })
 export class ProfileEditComponent implements OnInit {
-    uploadPercent: Observable<number>;
-    downloadURL: Observable<string>;
-    profileImage;
-    uid: string;
-    isLoading = true;
-    profile: ProfileModel;
+    uploadPercent: Observable<number>; // Porcentaje de subida.
+    downloadURL: Observable<string>; // ruta de la imagen subida.
+    profileImage; // Imagen actual del perfil.
+    uid: string; // uid del usuario autenticado.
+    isLoading = true; // Enlace de descarga de la foto recibido.
+    isSynced = false; // Perfil sincronizado con el store.
+    profile: ProfileModel; // Datos del perfil.
+    profileForm: FormGroup; // Formulario.
 
     constructor(
         private storage: AngularFireStorage,
@@ -35,7 +37,7 @@ export class ProfileEditComponent implements OnInit {
         this.store
             .pipe(select(fromProfile.getProfile))
             .subscribe((profileData: ProfileModel) => {
-                if (profileData) {
+                if (profileData.name) {
                     this.storage
                         .ref(profileData.profileImage)
                         .getDownloadURL()
@@ -44,10 +46,21 @@ export class ProfileEditComponent implements OnInit {
                             this.isLoading = false;
                         });
                     this.profile = profileData;
-                } else {
-                    this.store.dispatch(new profileActions.GetProfileData());
+                    this.initForm();
+                    this.isSynced = true;
                 }
             });
+    }
+    initForm() {
+        this.profileForm = new FormGroup({
+            name: new FormControl(this.profile.name, Validators.required),
+            surname: new FormControl(this.profile.surname, Validators.required),
+            birthDate: new FormControl(
+                this.profile.birthDate,
+                Validators.required
+            ),
+            profileImage: new FormControl()
+        });
     }
 
     uploadFile(event) {
@@ -58,9 +71,12 @@ export class ProfileEditComponent implements OnInit {
 
         // observe percentage changes
         this.uploadPercent = task.percentageChanges();
+
         // get notified when the download URL is available
         task.snapshotChanges()
             .pipe(finalize(() => (this.downloadURL = fileRef.getDownloadURL())))
             .subscribe();
     }
+    onSubmit() {}
+    onCancel() {}
 }

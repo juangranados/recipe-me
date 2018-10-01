@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { select, Store } from '@ngrx/store';
 import * as fromAuth from '../../auth/auth.reducer';
 import * as fromProfile from '../profile.reducer';
@@ -15,9 +15,9 @@ import { take } from 'rxjs/operators';
 })
 export class ProfileViewComponent implements OnInit {
     isLoading = true;
+    isSynced = false;
     profileImage: string;
     profile: ProfileModel;
-    uid: string;
 
     constructor(
         private storage: AngularFireStorage,
@@ -26,15 +26,9 @@ export class ProfileViewComponent implements OnInit {
 
     ngOnInit() {
         this.store
-            .pipe(
-                select(fromProfile.getProfile),
-                take(10)
-            )
+            .pipe(select(fromProfile.getProfile))
             .subscribe((profileData: ProfileModel) => {
-                if (!profileData.name) {
-                    this.store.dispatch(new profileActions.GetProfileData());
-                    console.log('Puta mierda de angular de los cojones.');
-                } else {
+                if (profileData.name) {
                     this.storage
                         .ref(profileData.profileImage)
                         .getDownloadURL()
@@ -43,21 +37,8 @@ export class ProfileViewComponent implements OnInit {
                             this.isLoading = false;
                         });
                     this.profile = profileData;
+                    this.isSynced = true;
                 }
             });
-        // this.store
-        //     .pipe(select(fromProfile.getProfile))
-        //     .subscribe((profileData: ProfileModel) => {
-        //         if (profileData.name) {
-        //             this.storage
-        //                 .ref(profileData.profileImage)
-        //                 .getDownloadURL()
-        //                 .subscribe((url: string) => {
-        //                     this.profileImage = url;
-        //                     this.isLoading = false;
-        //                 });
-        //             this.profile = profileData;
-        //         }
-        //     });
     }
 }

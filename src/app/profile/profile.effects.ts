@@ -21,7 +21,7 @@ export class ProfileEffects {
     // Obtener datos del perfil de Firebase
     @Effect()
     getProfileData$: Observable<Action> = this.actions$
-        .pipe(ofType(profileActions.GET_PROFILE_DATA))
+        .pipe(ofType(profileActions.SYNC_PROFILE_DATA))
         .pipe(switchMap(() => this.store.pipe(select(fromAuth.getUid))))
         .pipe(
             switchMap((uid: string) => {
@@ -41,6 +41,18 @@ export class ProfileEffects {
         )
         .pipe(
             map((profileData: ProfileModel) => {
+                this.store
+                    .pipe(
+                        select(fromProfile.getIsSynced),
+                        take(1)
+                    )
+                    .subscribe((isSynced: boolean) => {
+                        if (!isSynced) {
+                            this.store.dispatch(
+                                new profileActions.SyncedProfileData()
+                            );
+                        }
+                    });
                 return new profileActions.StoreProfileData(profileData);
             }),
             catchError((error, caught) => {

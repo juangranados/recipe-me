@@ -1,0 +1,15 @@
+.botones{
+    margin-top: 10px;
+}
+.edit-form {
+    display: block;
+    margin: 10px auto 10px;
+    vertical-align:middle;
+}
+img {
+    max-width:100%;
+    height:auto;
+}
+mat-spinner {
+    margin-top: 10px;
+}

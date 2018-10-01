@@ -10,6 +10,7 @@ import { EffectsModule } from '@ngrx/effects';
 import { ProfileEffects } from './profile.effects';
 import { ProfileViewComponent } from './profile-view/profile-view.component';
 import { ProfileEditComponent } from './profile-edit/profile-edit.component';
+import { ReactiveFormsModule } from '@angular/forms';
 
 @NgModule({
     imports: [
@@ -17,6 +18,7 @@ import { ProfileEditComponent } from './profile-edit/profile-edit.component';
         MaterialModule,
         FlexLayoutModule,
         ProfileRoutingModule,
+        ReactiveFormsModule, // Formularios reactivos.
         StoreModule.forFeature('profile', profileReducer), // Reducer de recipe.
         EffectsModule.forFeature([ProfileEffects]) // Efectos de recipe.
     ],
