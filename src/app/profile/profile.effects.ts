@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 import { Actions, Effect, ofType } from '@ngrx/effects';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { Action, select, Store } from '@ngrx/store';
 import * as fromAuth from '../auth/auth.reducer';
 import * as profileActions from './profile.actions';
-import { catchError, map, switchMap } from 'rxjs/operators';
+import { catchError, map, switchMap, take } from 'rxjs/operators';
 import * as fromProfile from './profile.reducer';
 import { AngularFirestore } from '@angular/fire/firestore';
 import { ProfileModel } from './profile.model';
@@ -18,17 +18,26 @@ export class ProfileEffects {
         private afs: AngularFirestore,
         private messageService: MessageService
     ) {}
+    // Obtener datos del perfil de Firebase
     @Effect()
     getProfileData$: Observable<Action> = this.actions$
-        .pipe(ofType(profileActions.GET_PROFILE_DATA)) // Sólo se ejecuta este efecto ante acciones de tipo GET_AUTHENTICATION.
+        .pipe(ofType(profileActions.GET_PROFILE_DATA))
         .pipe(switchMap(() => this.store.pipe(select(fromAuth.getUid))))
         .pipe(
-            switchMap((uid: string) =>
-                this.afs
-                    .collection('users')
-                    .doc<ProfileModel>(uid)
-                    .valueChanges()
-            )
+            switchMap((uid: string) => {
+                if (uid) {
+                    return this.afs
+                        .collection('users')
+                        .doc<ProfileModel>(uid)
+                        .valueChanges();
+                } else {
+                    return throwError(
+                        new Error(
+                            'No se pueden recuperar los datos del perfil porque el uid del usuario es null'
+                        )
+                    );
+                }
+            })
         )
         .pipe(
             map((profileData: ProfileModel) => {
@@ -38,7 +47,16 @@ export class ProfileEffects {
                 this.store.dispatch(
                     new profileActions.ErrorGettingProfileData(error.message)
                 );
-                this.messageService.setMessage(error.message);
+                this.store
+                    .pipe(
+                        select(fromAuth.getUid),
+                        take(1)
+                    )
+                    .subscribe((uid: string) => {
+                        if (uid) {
+                            this.messageService.setMessage(error.message);
+                        }
+                    });
                 return caught;
             })
         );

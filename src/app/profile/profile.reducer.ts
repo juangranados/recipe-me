@@ -7,6 +7,7 @@ import {
     SET_PROFILE_DATA,
     STORE_PROFILE_DATA
 } from './profile.actions';
+import { createFeatureSelector, createSelector } from '@ngrx/store';
 
 export interface State {
     name: string;
@@ -21,7 +22,7 @@ export const initialState: State = {
     name: null,
     surname: null,
     birthDate: null,
-    profileImage: '/default/profile/profile',
+    profileImage: 'default/profile/profile.png',
     isLoading: false
 };
 
@@ -63,3 +64,22 @@ export function profileReducer(state = initialState, action: ProfileActions) {
             return state; // Para el resto de de acciones no se modifica el store.
     }
 }
+
+// Se crea un Feature Selector, el cual devuelve al ser invocado la parte del estado correspondiente a recipes
+export const getProfileState = createFeatureSelector<State>('profile');
+
+// Se crean los selectores para el resto de propiedades de esta parte del estado.
+// Al ejecutar estos selectores se obtiene un observable que devuelve los cambios en el estado.
+export const getIsLoading = createSelector(
+    getProfileState,
+    (state: State) => state.isLoading
+); // Selector de isLoading
+
+export const getProfile = createSelector(getProfileState, (state: State) => {
+    return {
+        name: state.name,
+        surname: state.surname,
+        birthDate: state.birthDate,
+        profileImage: state.profileImage
+    };
+});

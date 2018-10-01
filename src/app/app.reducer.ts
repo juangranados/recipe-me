@@ -12,6 +12,14 @@ import * as fromAuth from './auth/auth.reducer'; // Reducer de la parte auth.
 import * as fromProfile from './profile/profile.reducer'; // Reducer de la parte auth.
 import { routerReducer } from '@ngrx/router-store'; // Reducer de la parte router.
 
+// Estado Global
+export interface State {
+    shoppingList: fromShoppingList.State; // Estado de la parte shopping-list
+    recipes: fromRecipe.State; // Estado de la parte recipe
+    auth: fromAuth.State; // Estado de la parte auth.
+    profile: fromProfile.State; // Estado de la parte profile.
+}
+
 // Reducers de la aplicación. El tipo ActionReducerMap es un map de todos los reducers de la aplicación.
 export const reducers: ActionReducerMap<any> = {
     shoppingList: fromShoppingList.shoppingListReducer, // Función reducer de la parte shopping-list

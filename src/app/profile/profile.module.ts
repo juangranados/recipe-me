@@ -8,6 +8,8 @@ import { StoreModule } from '@ngrx/store';
 import { profileReducer } from './profile.reducer';
 import { EffectsModule } from '@ngrx/effects';
 import { ProfileEffects } from './profile.effects';
+import { ProfileViewComponent } from './profile-view/profile-view.component';
+import { ProfileEditComponent } from './profile-edit/profile-edit.component';
 
 @NgModule({
     imports: [
@@ -18,6 +20,6 @@ import { ProfileEffects } from './profile.effects';
         StoreModule.forFeature('profile', profileReducer), // Reducer de recipe.
         EffectsModule.forFeature([ProfileEffects]) // Efectos de recipe.
     ],
-    declarations: [ProfileComponent]
+    declarations: [ProfileComponent, ProfileViewComponent, ProfileEditComponent]
 })
 export class ProfileModule {}
