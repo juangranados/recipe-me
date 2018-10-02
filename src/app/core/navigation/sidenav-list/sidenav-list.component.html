@@ -7,15 +7,19 @@
     <mat-icon>input</mat-icon>
     <span class="nav-caption">Entrar</span>
   </a>
-  <a mat-list-item *ngIf="isAuthenticated$ | async" routerLink="/recipes" (click)="onClose()">
-    <mat-icon>fastfood</mat-icon>
-    <span class="nav-caption">Recetas</span>
-  </a>
-  <a mat-list-item *ngIf="isAuthenticated$ | async" routerLink="/shopping-list" (click)="onClose()">
-    <mat-icon>format_list_bulleted</mat-icon>
-    <span class="nav-caption">Lista</span>
-  </a>
-  <mat-list-item *ngIf="isAuthenticated$ | async">
+    <a mat-list-item *ngIf="isAuthenticated$ | async" routerLink="/recipes" (click)="onClose()">
+        <mat-icon>fastfood</mat-icon>
+        <span class="nav-caption">Recetas</span>
+    </a>
+    <a mat-list-item *ngIf="isAuthenticated$ | async" routerLink="/shopping-list" (click)="onClose()">
+        <mat-icon>format_list_bulleted</mat-icon>
+        <span class="nav-caption">Lista</span>
+    </a>
+    <a mat-list-item *ngIf="isAuthenticated$ | async" routerLink="/profile" (click)="onClose()">
+        <mat-icon>account_box</mat-icon>
+        <span class="nav-caption">Perfil</span>
+    </a>
+    <mat-list-item *ngIf="isAuthenticated$ | async">
     <button mat-icon-button (click)="onLogout()">
       <mat-icon>eject</mat-icon>
       <span class="nav-caption">Salir</span>

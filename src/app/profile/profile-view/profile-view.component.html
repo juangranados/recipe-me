@@ -1,0 +1,16 @@
+<mat-card class="card" *ngIf="isSynced">
+    <mat-card-header>
+        <div mat-card-avatar>
+            <mat-icon aria-label="Perfil de usuario">account_box</mat-icon>
+        </div>
+        <mat-card-title>{{profile.name}} {{profile.surname}}</mat-card-title>
+        <mat-card-subtitle>{{profile.birthDate}}</mat-card-subtitle>
+    </mat-card-header>
+    <img *ngIf="!isLoading" mat-card-image src="{{profileImage}}" alt="Foto de perfil">
+    <mat-progress-spinner *ngIf="isLoading"></mat-progress-spinner>
+    <mat-card-content>
+    </mat-card-content>
+    <mat-card-actions fxLayoutAlign="center center">
+        <button mat-button mat-raised-button color="primary" routerLink="edit">Editar</button>
+    </mat-card-actions>
+</mat-card>

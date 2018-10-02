@@ -1,0 +1,32 @@
+<!--<input type="file" (change)="uploadFile($event)" />-->
+<!--<div>{{ uploadPercent | async }}</div>-->
+<!--<a [href]="downloadURL | async">{{ downloadURL | async }}</a>-->
+<!--<div fxLayout="column" fxLayoutAlign="center start">-->
+
+    <!--<div class="container" *ngIf="profileImage | async; let url">-->
+        <!--<img  [src]="url" alt="Imagen de perfil"/>-->
+    <!--</div>-->
+    <!--<mat-progress-spinner *ngIf="!(profileImage | async)"></mat-progress-spinner>-->
+
+    <!--<p>{{downloadURL | async}}</p>-->
+
+    <!--&lt;!&ndash;<mat-form-field hintLabel="Selecciona una imagen de perfil.">&ndash;&gt;-->
+        <!--&lt;!&ndash;<input type="file" matInput placeholder="ruta de la imagen" (change)="uploadFile($event)" accept=".png,.jpg">&ndash;&gt;-->
+    <!--&lt;!&ndash;</mat-form-field>&ndash;&gt;-->
+
+    <!--<input #fileInput type="file" (change)="uploadFile($event)" style="display:none;" accept=".png,.jpg" />-->
+    <!--<button mat-raised-button color="primary" (click)="fileInput.click()">Seleccionar Imagen</button>-->
+
+    <!--<mat-progress-spinner-->
+            <!--[fxHide]="(uploadPercent | async) === 100"-->
+            <!--color="primary"-->
+            <!--mode="determinate"-->
+            <!--[value]="uploadPercent | async">-->
+    <!--</mat-progress-spinner>-->
+<!--</div>-->
+
+<div fxLayout="column" fxLayoutAlign="center center" [fxHide]="!(isLoading$ | async)">
+    <mat-spinner fxFlexAlign="center"></mat-spinner>
+    <h4 class="mat-typography">Cargando...</h4>
+</div>
+<router-outlet [fxHide]="isLoading$ | async"></router-outlet>

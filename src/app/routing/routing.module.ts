@@ -25,6 +25,12 @@ const appRoutes: Routes = [
         canLoad: [AuthGuard],
         runGuardsAndResolvers: 'always' // Para que ejecute los guards al refrescar página
     },
+    {
+        path: 'profile',
+        loadChildren: '../profile/profile.module#ProfileModule',
+        canLoad: [AuthGuard],
+        runGuardsAndResolvers: 'always' // Para que ejecute los guards al refrescar página
+    },
     { path: 'not-found', component: PageNotFoundComponent },
     { path: '**', redirectTo: '/not-found' }
 ];
