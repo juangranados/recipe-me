@@ -21,13 +21,20 @@ export class ProfileEditComponent implements OnInit {
     profileImage = null; // Imagen actual del perfil.
     uid: string; // uid del usuario autenticado.
     isLoading = true; // Enlace de descarga de la foto no recibido.
-    isUploading = false; // Enlace de descarga de la foto recibido.
+    isUploading = false; // Se está subiendo una imagen (para mostrar el progreso)
     isSynced = false; // Perfil sincronizado con el store.
     profile: ProfileModel; // Datos del perfil.
     profileForm: FormGroup; // Formulario.
-    newProfilePath = null;
-    uploadError = false;
+    newProfilePath = null; // Ruta de la nueva foto en el storage.
+    uploadError = false; // Error al subir la imagen.
 
+    /**
+     * Constructor de la clase
+     * @param storage: instancia global de la clase AngularFireStorage para subir y descargar archivos.
+     * @param store: estado de la aplicación.
+     * @param messageService: instancia global de la clase MessageService para mostrar mensajes.
+     * @param router: instancia global de la clase Router para navegar.
+     */
     constructor(
         private storage: AngularFireStorage,
         private store: Store<fromProfile.State>,
@@ -36,6 +43,9 @@ export class ProfileEditComponent implements OnInit {
     ) {}
 
     ngOnInit() {
+        // Se comprueba si está cargando el perfil para no mostrar dos spinner.
+        // Este caso solo se daría en la recarga de págino ya que el perfil se carga
+        // en ProfileComponent.
         this.store
             .pipe(select(fromProfile.getIsLoading))
             .subscribe((isLoading: boolean) => {
@@ -43,11 +53,15 @@ export class ProfileEditComponent implements OnInit {
                     this.isLoading = false; // Evita que salgan dos spinner.
                 }
             });
+        // Se obtiene el UID del usuario autenticado para saber donde guardar la
+        // nueva imagen de perfil.
         this.store.pipe(select(fromAuth.getUid)).subscribe((uid: string) => {
             if (uid) {
                 this.uid = uid;
             }
         });
+        // Se obtienen los datos del perfil almacenados en el estado que se han
+        // recuperado de Cloud Firestore.
         this.store
             .pipe(select(fromProfile.getProfile))
             .subscribe((profileData: ProfileModel) => {
@@ -65,6 +79,10 @@ export class ProfileEditComponent implements OnInit {
                 }
             });
     }
+
+    /**
+     * Inicia los valores del formulario.
+     */
     initForm() {
         this.profileForm = new FormGroup({
             name: new FormControl(this.profile.name, Validators.required),
@@ -73,14 +91,19 @@ export class ProfileEditComponent implements OnInit {
                 this.profile.birthDate,
                 Validators.required
             )
-            // profileImage: new FormControl(null, Validators.required)
         });
     }
 
+    /**
+     * Sube la imagen al seleccionarla en la vista
+     * @param event: contiene la imagen a subir entre sus propiedades.
+     */
     uploadFile(event) {
+        // Si ya había una subida, se borra.
         if (this.newProfilePath) {
             this.storage.ref(this.newProfilePath).delete();
         }
+        // Subir la imagen.
         const file = event.target.files[0];
         const randomId = Math.random()
             .toString(36)
@@ -112,6 +135,11 @@ export class ProfileEditComponent implements OnInit {
         this.uploadPercent = task.percentageChanges();
     }
 
+    /**
+     * Se envía el formulario.
+     * Se actualiza el perfil en Cloud Firestore y se borra la imagen anterior
+     * si se ha seleccionado una nueva.
+     */
     onSubmit() {
         this.isLoading = true;
         if (this.newProfilePath) {
@@ -134,6 +162,10 @@ export class ProfileEditComponent implements OnInit {
             this.router.navigate(['/profile']);
         }
     }
+
+    /**
+     * Se navega de vuelta borrando la imagen subida si la hay.
+     */
     onCancel() {
         this.isLoading = true;
         if (this.newProfilePath) {
