@@ -5,7 +5,7 @@
     </div>
     <!--Botones-->
     <div fxLayout="row" fxLayoutGap ="20px" class="botones">
-        <button mat-raised-button color="primary" [disabled]="!profileForm.valid" type="submit">Guardar</button>
+        <button mat-raised-button color="primary" [disabled]="!profileForm.valid || isLoading || isUploading || uploadError" type="submit">Guardar</button>
         <button mat-raised-button color="warn" type="button" (click)="onCancel()">Cancelar</button>
     </div>
     <!--Inputs---------------------------------------------------->
@@ -27,6 +27,6 @@
 
     <img *ngIf="!isLoading" mat-card-image src="{{profileImage}}" alt="Foto de perfil">
     <label for="files">Cambiar foto</label>
-    <input id="files" type="file" accept=".png,.jpg" formControlName="profileImage">
-
+    <input id="files" type="file" accept=".png,.jpg"  (change)="uploadFile($event)">
+    <mat-progress-bar *ngIf="isUploading" mode="determinate" [value]="uploadPercent | async"></mat-progress-bar>
 </form>

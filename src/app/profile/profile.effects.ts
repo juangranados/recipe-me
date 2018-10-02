@@ -72,4 +72,46 @@ export class ProfileEffects {
                 return caught;
             })
         );
+    // Guardar datos del perfil de Firebase
+    @Effect()
+    setProfileData$: Observable<Action> = this.actions$
+        .pipe(
+            ofType(profileActions.SET_PROFILE_DATA),
+            map((action: profileActions.SetProfileData) => action.payload),
+            map((profileData: ProfileModel) => {
+                this.store
+                    .pipe(
+                        select(fromAuth.getUid),
+                        take(1)
+                    )
+                    .subscribe((uid: string) => {
+                        if (uid) {
+                            return this.afs
+                                .collection('users')
+                                .doc<ProfileModel>(uid)
+                                .set(profileData);
+                        } else {
+                            return throwError(
+                                new Error(
+                                    'No se pueden guardar los datos del perfil porque el uid del usuario es null'
+                                )
+                            );
+                        }
+                    });
+            })
+        )
+        .pipe(
+            map(
+                () => new profileActions.OkSettingProfileData(),
+                catchError((error, caught) => {
+                    this.messageService.setMessage(error.message);
+                    this.store.dispatch(
+                        new profileActions.ErrorSettingProfileData(
+                            error.message
+                        )
+                    );
+                    return caught;
+                })
+            )
+        );
 }
