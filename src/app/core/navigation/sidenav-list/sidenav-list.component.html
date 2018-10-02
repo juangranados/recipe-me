@@ -19,10 +19,8 @@
         <mat-icon>account_box</mat-icon>
         <span class="nav-caption">Perfil</span>
     </a>
-    <mat-list-item *ngIf="isAuthenticated$ | async">
-    <button mat-icon-button (click)="onLogout()">
+    <a mat-list-item *ngIf="isAuthenticated$ | async" (click)="onLogout()">
       <mat-icon>eject</mat-icon>
       <span class="nav-caption">Salir</span>
-    </button>
-  </mat-list-item>
+  </a>
 </mat-nav-list>

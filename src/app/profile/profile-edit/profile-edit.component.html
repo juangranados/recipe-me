@@ -1,32 +1,33 @@
-<div fxLayout="column" fxLayoutAlign="center center" *ngIf="isLoading">
-    <mat-spinner fxFlexAlign="center"></mat-spinner>
-    <h4 class="mat-typography">Cargando...</h4>
-</div>
-<form *ngIf="isSynced &&!isLoading" class="mat-typography edit-form" fxLayout="column" fxLayoutGap="10px" fxLayoutAlign="center" fxFlex.gt-sm="50" [formGroup] = "profileForm" (ngSubmit)="onSubmit()">
+
+<form class="mat-typography edit-form" fxLayout="column" fxLayoutGap="10px" fxLayoutAlign="center" fxFlex.gt-sm="50" [formGroup] = "profileForm" (ngSubmit)="onSubmit()">
+    <div *ngIf="isLoading" fxLayout="column" fxLayoutAlign="center center" >
+        <mat-spinner fxFlexAlign="center"></mat-spinner>
+        <h4 class="mat-typography">Cargando...</h4>
+    </div>
     <!--Botones-->
-    <div fxLayout="row" fxLayoutGap ="20px" class="botones">
+    <div *ngIf="isSynced &&!isLoading" fxLayout="row" fxLayoutGap ="20px" class="botones">
         <button mat-raised-button color="primary" [disabled]="!profileForm.valid || isLoading || isUploading || uploadError" type="submit">Guardar</button>
         <button mat-raised-button color="warn" type="button" (click)="onCancel()">Cancelar</button>
     </div>
     <!--Inputs---------------------------------------------------->
     <!--Nombre-->
-    <mat-form-field hintLabel="Introduce tu nombre">
+    <mat-form-field *ngIf="isSynced &&!isLoading">
         <input type="text" matInput placeholder="Nombre" formControlName="name">
         <mat-error *ngIf="profileForm.get('name').hasError('required')">El nombre no puede estar vacío.</mat-error>
     </mat-form-field>
 
-    <mat-form-field hintLabel="Apellido">
-        <input type="text" matInput placeholder="Introduce tu apellido" formControlName="surname">
+    <mat-form-field *ngIf="isSynced &&!isLoading">
+        <input type="text" matInput placeholder="Apellido" formControlName="surname">
         <mat-error *ngIf="profileForm.get('surname').hasError('required')">El apellido no puede estar vacío.</mat-error>
     </mat-form-field>
 
-    <mat-form-field hintLabel="Fecha de nacimiento">
-        <input type="text" matInput placeholder="Introduce tu fecha de nacimiento" formControlName="birthDate">
+    <mat-form-field *ngIf="isSynced &&!isLoading">
+        <input type="text" matInput placeholder="Fecha de nacimiento" formControlName="birthDate">
         <mat-error *ngIf="profileForm.get('birthDate').hasError('required')">La fecha de nacimiento no puede estar vacía.</mat-error>
     </mat-form-field>
 
-    <img *ngIf="!isLoading" mat-card-image src="{{profileImage}}" alt="Foto de perfil">
-    <label for="files">Cambiar foto</label>
-    <input id="files" type="file" accept=".png,.jpg"  (change)="uploadFile($event)">
-    <mat-progress-bar *ngIf="isUploading" mode="determinate" [value]="uploadPercent | async"></mat-progress-bar>
+    <img *ngIf="isSynced &&!isLoading" src="{{profileImage}}" alt="Foto de perfil">
+    <label *ngIf="isSynced &&!isLoading" for="files">Cambiar foto</label>
+    <input *ngIf="isSynced &&!isLoading" id="files" type="file" accept=".png,.jpg"  (change)="uploadFile($event)">
+    <mat-progress-bar *ngIf="isUploading && isSynced &&!isLoading" mode="determinate" [value]="uploadPercent | async"></mat-progress-bar>
 </form>

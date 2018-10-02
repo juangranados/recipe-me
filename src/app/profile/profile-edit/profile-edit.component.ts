@@ -20,7 +20,7 @@ export class ProfileEditComponent implements OnInit {
     uploadPercent: Observable<number>; // Porcentaje de subida.
     profileImage = null; // Imagen actual del perfil.
     uid: string; // uid del usuario autenticado.
-    isLoading = true; // Enlace de descarga de la foto recibido.
+    isLoading = true; // Enlace de descarga de la foto no recibido.
     isUploading = false; // Enlace de descarga de la foto recibido.
     isSynced = false; // Perfil sincronizado con el store.
     profile: ProfileModel; // Datos del perfil.
@@ -36,6 +36,13 @@ export class ProfileEditComponent implements OnInit {
     ) {}
 
     ngOnInit() {
+        this.store
+            .pipe(select(fromProfile.getIsLoading))
+            .subscribe((isLoading: boolean) => {
+                if (isLoading && this.isLoading) {
+                    this.isLoading = false; // Evita que salgan dos spinner.
+                }
+            });
         this.store.pipe(select(fromAuth.getUid)).subscribe((uid: string) => {
             if (uid) {
                 this.uid = uid;
@@ -71,6 +78,9 @@ export class ProfileEditComponent implements OnInit {
     }
 
     uploadFile(event) {
+        if (this.newProfilePath) {
+            this.storage.ref(this.newProfilePath).delete();
+        }
         const file = event.target.files[0];
         const randomId = Math.random()
             .toString(36)
@@ -111,16 +121,9 @@ export class ProfileEditComponent implements OnInit {
                     profileImage: this.newProfilePath
                 })
             );
-            this.storage
-                .ref(this.profile.profileImage)
-                .delete()
-                .pipe(
-                    finalize(() => {
-                        this.router.navigate(['/profile']);
-                        // this.isLoading = false;
-                    })
-                )
-                .subscribe();
+            this.storage.ref(this.profile.profileImage).delete();
+
+            this.router.navigate(['/profile']);
         } else {
             this.store.dispatch(
                 new profileActions.SetProfileData({
@@ -129,10 +132,10 @@ export class ProfileEditComponent implements OnInit {
                 })
             );
             this.router.navigate(['/profile']);
-            // this.isLoading = false;
         }
     }
     onCancel() {
+        this.isLoading = true;
         if (this.newProfilePath) {
             this.storage
                 .ref(this.newProfilePath)
@@ -140,13 +143,11 @@ export class ProfileEditComponent implements OnInit {
                 .pipe(
                     finalize(() => {
                         this.router.navigate(['/profile']);
-                        // this.isLoading = false;
                     })
                 )
                 .subscribe();
         } else {
             this.router.navigate(['/profile']);
-            // this.isLoading = false;
         }
     }
 }
