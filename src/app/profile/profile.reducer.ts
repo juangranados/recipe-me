@@ -6,7 +6,8 @@ import {
     ProfileActions,
     SET_PROFILE_DATA,
     STORE_PROFILE_DATA,
-    SYNCED_PROFILE_DATA
+    SYNCED_PROFILE_DATA,
+    OK_SETTING_PROFILE_DATA
 } from './profile.actions';
 import { createFeatureSelector, createSelector } from '@ngrx/store';
 
@@ -52,6 +53,11 @@ export function profileReducer(state = initialState, action: ProfileActions) {
             return {
                 ...state,
                 isLoading: true
+            };
+        case OK_SETTING_PROFILE_DATA:
+            return {
+                ...state,
+                isLoading: false
             };
         case STORE_PROFILE_DATA:
             return {

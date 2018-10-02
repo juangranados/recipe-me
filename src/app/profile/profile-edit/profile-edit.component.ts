@@ -18,7 +18,6 @@ import { Router } from '@angular/router';
 })
 export class ProfileEditComponent implements OnInit {
     uploadPercent: Observable<number>; // Porcentaje de subida.
-    downloadURL: Observable<string>; // ruta de la imagen subida.
     profileImage = null; // Imagen actual del perfil.
     uid: string; // uid del usuario autenticado.
     isLoading = true; // Enlace de descarga de la foto recibido.
@@ -104,6 +103,7 @@ export class ProfileEditComponent implements OnInit {
     }
 
     onSubmit() {
+        this.isLoading = true;
         if (this.newProfilePath) {
             this.store.dispatch(
                 new profileActions.SetProfileData({
@@ -114,7 +114,12 @@ export class ProfileEditComponent implements OnInit {
             this.storage
                 .ref(this.profile.profileImage)
                 .delete()
-                .pipe(finalize(() => this.router.navigate(['/profile'])))
+                .pipe(
+                    finalize(() => {
+                        this.router.navigate(['/profile']);
+                        // this.isLoading = false;
+                    })
+                )
                 .subscribe();
         } else {
             this.store.dispatch(
@@ -124,12 +129,24 @@ export class ProfileEditComponent implements OnInit {
                 })
             );
             this.router.navigate(['/profile']);
+            // this.isLoading = false;
         }
     }
     onCancel() {
         if (this.newProfilePath) {
-            this.storage.ref(this.newProfilePath).delete();
+            this.storage
+                .ref(this.newProfilePath)
+                .delete()
+                .pipe(
+                    finalize(() => {
+                        this.router.navigate(['/profile']);
+                        // this.isLoading = false;
+                    })
+                )
+                .subscribe();
+        } else {
+            this.router.navigate(['/profile']);
+            // this.isLoading = false;
         }
-        this.router.navigate(['/profile']);
     }
 }

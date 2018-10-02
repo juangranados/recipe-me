@@ -1,8 +1,8 @@
-<form *ngIf="isSynced" class="mat-typography edit-form" fxLayout="column" fxLayoutGap="10px" fxLayoutAlign="center" fxFlex.gt-sm="50" [formGroup] = "profileForm" (ngSubmit)="onSubmit()">
-    <div fxLayout="column" fxLayoutAlign="center center" *ngIf="isLoading">
-        <mat-spinner fxFlexAlign="center"></mat-spinner>
-        <h4 class="mat-typography">Cargando...</h4>
-    </div>
+<div fxLayout="column" fxLayoutAlign="center center" *ngIf="isLoading">
+    <mat-spinner fxFlexAlign="center"></mat-spinner>
+    <h4 class="mat-typography">Cargando...</h4>
+</div>
+<form *ngIf="isSynced &&!isLoading" class="mat-typography edit-form" fxLayout="column" fxLayoutGap="10px" fxLayoutAlign="center" fxFlex.gt-sm="50" [formGroup] = "profileForm" (ngSubmit)="onSubmit()">
     <!--Botones-->
     <div fxLayout="row" fxLayoutGap ="20px" class="botones">
         <button mat-raised-button color="primary" [disabled]="!profileForm.valid || isLoading || isUploading || uploadError" type="submit">Guardar</button>
