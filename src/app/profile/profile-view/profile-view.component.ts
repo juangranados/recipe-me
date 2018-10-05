@@ -4,6 +4,7 @@ import * as fromProfile from '../profile.reducer';
 import { AngularFireStorage } from '@angular/fire/storage';
 import * as fromRoot from '../../app.reducer';
 import { ProfileModel } from '../profile.model';
+import { MessageService } from '../../shared/message.service';
 
 @Component({
     selector: 'app-profile-view',
@@ -18,7 +19,8 @@ export class ProfileViewComponent implements OnInit {
 
     constructor(
         private storage: AngularFireStorage, // Módulo para interactuar con el almacenamiento de Firebase
-        private store: Store<fromRoot.State> // Estado de la aplicación
+        private store: Store<fromRoot.State>, // Estado de la aplicación
+        private messageService: MessageService
     ) {}
 
     /**
@@ -37,10 +39,14 @@ export class ProfileViewComponent implements OnInit {
                     this.storage
                         .ref(profileData.profileImage)
                         .getDownloadURL() // Método que obtiene la ruta descargable de la imagen del perfil.
-                        .subscribe((url: string) => {
+                        .toPromise()
+                        .then((url: string) => {
                             this.profileImage = url; // Ruta de la imagen.
                             this.isLoading = false; // Se ha obtenido la ruta, ya no se muestra el spinner.
-                        });
+                        })
+                        .catch(error =>
+                            this.messageService.setMessage(error.message)
+                        );
                     this.profile = profileData; // Se obtienen los datos del perfil.
                     this.isSynced = true; // El perfil está sincronizado.
                 }

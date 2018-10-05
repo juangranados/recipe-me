@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { catchError, finalize } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { AngularFireStorage } from '@angular/fire/storage';
 import { select, Store } from '@ngrx/store';
@@ -70,10 +69,14 @@ export class ProfileEditComponent implements OnInit {
                     this.storage
                         .ref(profileData.profileImage)
                         .getDownloadURL()
-                        .subscribe((url: string) => {
+                        .toPromise()
+                        .then((url: string) => {
                             this.profileImage = url;
                             this.isLoading = false;
-                        });
+                        })
+                        .catch(error =>
+                            this.messageService.setMessage(error.message)
+                        );
                     this.profile = profileData; // Resto de datos del perfil.
                     this.initForm(); // Se inicia el formulario con los datos existentes.
                     this.isSynced = true; // El estado esta sincronizado con Cloud Firestore.
@@ -104,13 +107,17 @@ export class ProfileEditComponent implements OnInit {
         if (this.newProfilePath) {
             this.storage.ref(this.newProfilePath).delete();
         }
-        // Subir la imagen.
+        // Imagen seleccionada por el usuario.
         const file = event.target.files[0];
+        // Generar un id aleatorio para la imagen
         const randomId = Math.random()
             .toString(36)
             .substring(2);
+        // Ruta de la imagen dentro de Firebase.
         this.newProfilePath = `${this.uid}/profile/${randomId}`;
+        // Referencia de la imagen para subir.
         const fileRef = this.storage.ref(this.newProfilePath);
+        // Para mostrar la barra de progreso.
         this.isUploading = true;
         // Subir imagen
         const task = this.storage.upload(this.newProfilePath, file);
@@ -131,19 +138,6 @@ export class ProfileEditComponent implements OnInit {
 
         // Observable que indica el porcentaje de la subida.
         this.uploadPercent = task.percentageChanges();
-
-        // Método alternativo para actuar ante la finalización de la subida.
-        // task.snapshotChanges()
-        //     .pipe(
-        //         finalize(() =>
-        //             fileRef.getDownloadURL().subscribe(url => {
-        //                 this.profileImage = url;
-        //                 this.isUploading = false;
-        //                 this.uploadError = false;
-        //             })
-        //         )
-        //     )
-        //     .subscribe();
     }
 
     /**
@@ -152,7 +146,8 @@ export class ProfileEditComponent implements OnInit {
      * si se ha seleccionado una nueva.
      */
     onSubmit() {
-        this.isLoading = true;
+        this.isLoading = true; // Se esta cargando.
+        // Si hay nueva imagen, se graba en el perfil y borra la anterior de Firebase.
         if (this.newProfilePath) {
             this.store.dispatch(
                 new profileActions.SetProfileData({
@@ -160,7 +155,12 @@ export class ProfileEditComponent implements OnInit {
                     profileImage: this.newProfilePath
                 })
             );
-            this.storage.ref(this.profile.profileImage).delete();
+            // Borrar imagen anterior.
+            this.storage
+                .ref(this.profile.profileImage)
+                .delete()
+                .toPromise()
+                .catch(error => this.messageService.setMessage(error.message));
 
             this.router.navigate(['/profile']);
         } else {
@@ -179,16 +179,14 @@ export class ProfileEditComponent implements OnInit {
      */
     onCancel() {
         this.isLoading = true;
+        // Se borra la imagen  de Firebase si el usuario ha subido alguna.
         if (this.newProfilePath) {
             this.storage
                 .ref(this.newProfilePath)
                 .delete()
-                .pipe(
-                    finalize(() => {
-                        this.router.navigate(['/profile']);
-                    })
-                )
-                .subscribe();
+                .toPromise()
+                .then(() => this.router.navigate(['/profile']))
+                .catch(error => this.messageService.setMessage(error.message));
         } else {
             this.router.navigate(['/profile']);
         }
