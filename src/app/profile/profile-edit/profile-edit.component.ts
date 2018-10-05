@@ -112,28 +112,38 @@ export class ProfileEditComponent implements OnInit {
         this.newProfilePath = `${this.uid}/profile/${randomId}`;
         const fileRef = this.storage.ref(this.newProfilePath);
         this.isUploading = true;
+        // Subir imagen
         const task = this.storage.upload(this.newProfilePath, file);
 
-        // get notified when the download URL is available
-        task.snapshotChanges()
-            .pipe(
-                finalize(() =>
-                    fileRef.getDownloadURL().subscribe(url => {
-                        this.profileImage = url;
-                        this.isUploading = false;
-                        this.uploadError = false;
-                    })
-                ),
-                catchError((error, caught) => {
-                    this.messageService.setMessage(error.message);
-                    this.uploadError = true;
-                    return caught;
-                })
-            )
-            .subscribe();
+        // Actuar después de la subida o ante error.
+        task.then(() =>
+            // Al terminar, se obtiene la url para descargar la imagen.
+            fileRef.getDownloadURL().subscribe(url => {
+                this.profileImage = url;
+                this.isUploading = false;
+                this.uploadError = false;
+            })
+        ).catch(error => {
+            // Se produce un error en la subida.
+            this.messageService.setMessage(error.message);
+            this.uploadError = true;
+        });
 
-        // observe percentage changes
+        // Observable que indica el porcentaje de la subida.
         this.uploadPercent = task.percentageChanges();
+
+        // Método alternativo para actuar ante la finalización de la subida.
+        // task.snapshotChanges()
+        //     .pipe(
+        //         finalize(() =>
+        //             fileRef.getDownloadURL().subscribe(url => {
+        //                 this.profileImage = url;
+        //                 this.isUploading = false;
+        //                 this.uploadError = false;
+        //             })
+        //         )
+        //     )
+        //     .subscribe();
     }
 
     /**
