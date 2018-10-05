@@ -44,7 +44,7 @@ export class ProfileEditComponent implements OnInit {
 
     ngOnInit() {
         // Se comprueba si está cargando el perfil para no mostrar dos spinner.
-        // Este caso solo se daría en la recarga de págino ya que el perfil se carga
+        // Este caso solo se daría en la recarga de págino ya que el perfil se sincroniza con el estado
         // en ProfileComponent.
         this.store
             .pipe(select(fromProfile.getIsLoading))
@@ -66,6 +66,7 @@ export class ProfileEditComponent implements OnInit {
             .pipe(select(fromProfile.getProfile))
             .subscribe((profileData: ProfileModel) => {
                 if (profileData.name) {
+                    // Obtiene el enlace de descarga del path de Firestore.
                     this.storage
                         .ref(profileData.profileImage)
                         .getDownloadURL()
@@ -73,9 +74,9 @@ export class ProfileEditComponent implements OnInit {
                             this.profileImage = url;
                             this.isLoading = false;
                         });
-                    this.profile = profileData;
-                    this.initForm();
-                    this.isSynced = true;
+                    this.profile = profileData; // Resto de datos del perfil.
+                    this.initForm(); // Se inicia el formulario con los datos existentes.
+                    this.isSynced = true; // El estado esta sincronizado con Cloud Firestore.
                 }
             });
     }

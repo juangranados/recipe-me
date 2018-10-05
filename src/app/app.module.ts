@@ -35,11 +35,10 @@ import { AngularFireStorageModule } from '@angular/fire/storage';
         FlexLayoutModule, // Angular Material Flex Layout
         BrowserAnimationsModule, // Angular Material Animations
         CoreModule,
-        NgxSpinnerModule, // Spinner
         StoreModule.forRoot(reducers, { metaReducers }), // Funciones reducer de la aplicación.
         !environment.production
             ? StoreDevtoolsModule.instrument({ maxAge: 25 })
-            : [], // Configuración de las herramientas de desarrollo. Guarda 25 cambios de estado.
+            : [], // Configuración de las herramientas de desarrollo sólo en entorno de desarrollo. Guarda 25 cambios de estado.
         EffectsModule.forRoot([AuthEffects]), // Efectos de ngrx. Sólo se importa los de auth porque cada módulo importará los suyos.
         StoreRouterConnectingModule.forRoot({ stateKey: 'router' }), // Añade el router al store con nombre router.
         AngularFireAuthModule, // imports firebase/auth, only needed for auth features.
