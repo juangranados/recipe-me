@@ -12,7 +12,7 @@ El estado se modifica generando un nuevo estado para que ngrx guarde un históri
 por los que pasa la aplicación.
 */
 
-// Creación del Entity adapter que representa el estado de recipes.
+// Creación del Entity Adapter que representa el estado de recipes.
 export const recipeAdapter = createEntityAdapter<RecipeId>();
 export interface State extends EntityState<RecipeId> {
     // Al heredar EntityState tendrá dos propiedades mas:
@@ -21,10 +21,10 @@ export interface State extends EntityState<RecipeId> {
     isLoading: boolean; // Indica que los datos se están recibiendo para mostrar un spinner en la pantalla.
     isSynced: boolean; // Indica que esta sincronizado el store con Firebase
     recipeSelected: RecipeId; // Indica la receta seleccionada para ver o editar.
-    error?: String; // Código de error.
+    error?: String; // Mensaje de error.
 }
-// Definición de estado inicial.
-// Sólo es necesario especificar el campo isLoading.
+
+// Definición de estado inicial. No es necesario especificar el Entity Adapter ya que lo genera automáticamente.
 export const initialState: State = recipeAdapter.getInitialState({
     isLoading: false,
     isSynced: false,
@@ -33,7 +33,7 @@ export const initialState: State = recipeAdapter.getInitialState({
 
 /**
  * Función reducer que modifica el estado de la parte recipes en función de la acción recibida.
- * Los argumentos los pasa automáticamente ngrx a la función reducer ejecutarse una acción.
+ * Los argumentos los pasa automáticamente ngrx a la función reducer al ejecutarse una acción.
  * @param state: estado actual de la aplicación, por defecto recibe el estado inicial al inicio.
  * @param action: acción realizada.
  * @return: nuevo estado modificado o estado existente en el caso de que la acción no lo modifique.
@@ -44,16 +44,19 @@ export function recipeReducer(
 ) {
     // En función del tipo de acción recibida se cambia el estado.
     switch (action.type) {
-        case actions.RECIPE_SYNCED: // Inicio de una operación asíncrona en Firebase.
+        case actions.RECIPE_SYNCED: // Las recetas están sincronizadas con Firebase.
             return { ...state, isSynced: true };
 
-        case actions.RECIPE_ERROR_SYNC: // Inicio de una operación asíncrona en Firebase.
+        case actions.RECIPE_ERROR_SYNC: // Error de sincronización.
             return {
                 ...state,
                 isLoading: false,
                 error: action.payload,
                 isSynced: false
             };
+
+        case actions.RECIPE_STOP_SYNCING: // Se para la sincronización de las recetas con Firebase debido a la destrucción del componente.
+            return initialState;
 
         case actions.RECIPE_START_LOADING: // Inicio de una operación asíncrona en Firebase.
             return { ...state, isLoading: true };
@@ -67,7 +70,7 @@ export function recipeReducer(
         case actions.RECIPE_SELECTED: // El usuario selecciona una receta para ver o editar
             return { ...state, recipeSelected: action.payload };
 
-        case actions.NO_RECIPE_SELECTED: // El usuario selecciona una receta para ver o editar
+        case actions.NO_RECIPE_SELECTED: // El usuario no ha seleccionado todavía una receta para ver o editar
             return { ...state, recipeSelected: null };
 
         case actions.RECIPE_ADDED: // Se añade una receta mediante la función addOne de EntityState.
@@ -96,7 +99,7 @@ export function recipeReducer(
                 }
             );
 
-        case actions.RECIPE_REMOVED: // Se añade una receta mediante la función removeOne de EntityState.
+        case actions.RECIPE_REMOVED: // Se borra una receta mediante la función removeOne de EntityState.
             return recipeAdapter.removeOne(action.payload.id, {
                 // Se genera un objeto representando el nuevo estado para borrar el campo error (de tenerlo).
                 ids: state.ids,
@@ -105,7 +108,7 @@ export function recipeReducer(
                 isSynced: state.isSynced,
                 recipeSelected: state.recipeSelected
             });
-        // Para acciones que no modifican el estado.
+        // Para acciones que no modifican el estado se devuelve sin modificar.
         default:
             return state;
     }
@@ -148,5 +151,6 @@ export const getRecipeSelectedIngredients = createSelector(
     getRecipeState,
     (state: State) => state.recipeSelected.ingredients
 ); // Selector de recipeSelected
+// Selector de un elemento por id.
 export const getRecipeById = id =>
-    createSelector(selectEntities, entities => entities[id]); // Selector de un elemento por id.
+    createSelector(selectEntities, entities => entities[id]);

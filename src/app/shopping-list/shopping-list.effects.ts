@@ -9,13 +9,15 @@ import {
     map,
     mergeMap,
     switchMap,
-    take
+    take,
+    takeUntil
 } from 'rxjs/operators';
 import { AngularFirestore } from '@angular/fire//firestore';
 import { Ingredient } from '../shared/ingredient.model';
 import * as shoppingListActions from './shopping-list.actions';
 import * as fromShoppingList from './shopping-list.reducer';
 import * as fromAuth from '../auth/auth.reducer';
+import { ShoppingListUnsubscribeService } from './shopping-list-unsubscribe.service';
 
 // Las clase que contienen los efectos deben llevar el decorador @Injectable()
 @Injectable()
@@ -25,18 +27,20 @@ export class ShoppingListEffects {
      * @param actions$: las clases con efectos siempre reciben un observable de tipo Action para filtrar las acciones.
      * @param afs: instancia de la clase AngularFirestore para realizar operaciones sobre Cloud Firestore.
      * @param store: estado actual para lanzar acciones.
+     * @param unsubscribeService
      */
     constructor(
         private actions$: Actions,
         private readonly afs: AngularFirestore,
-        private store: Store<fromShoppingList.State>
+        private store: Store<fromShoppingList.State>,
+        private unsubscribeService: ShoppingListUnsubscribeService
     ) {}
 
-    // Efecto que se ejecuta al lanzar la acción SHOPPING_LIST_SYNC.
+    // Efecto que se ejecuta al lanzar la acción SHOPPING_LIST_START_SYNCING.
     @Effect()
     query$: Observable<Action> = this.actions$ // Sintaxis por defecto.
         .pipe(
-            ofType(shoppingListActions.SHOPPING_LIST_SYNC) // Sólo se ejecuta si la acción es de tipo SHOPPING_LIST_SYNC.
+            ofType(shoppingListActions.SHOPPING_LIST_START_SYNCING) // Sólo se ejecuta si la acción es de tipo SHOPPING_LIST_START_SYNCING.
         )
         .pipe(
             switchMap(() => {
@@ -63,7 +67,8 @@ export class ShoppingListEffects {
                         });
                     return this.afs
                         .collection<Ingredient>(`users/${uid}/shopping-list`)
-                        .stateChanges();
+                        .stateChanges()
+                        .pipe(takeUntil(this.unsubscribeService.unsubscribe$));
                     // .pipe(delay(2000)); // Delay de palisco para mostrar el spinner.
                     // return this.afs.collection<Ingredient>('shopping-list').stateChanges(); // Se devuelve un Observable que enviará todos los cambios que se producen en la colección.
                 }

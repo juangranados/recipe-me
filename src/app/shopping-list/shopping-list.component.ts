@@ -1,5 +1,11 @@
 // src/app/shopping-list/shopping-list.component.ts
-import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
+import {
+    AfterViewInit,
+    Component,
+    OnDestroy,
+    OnInit,
+    ViewChild
+} from '@angular/core';
 import { addIngredient, Ingredient } from '../shared/ingredient.model';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import {
@@ -19,13 +25,14 @@ import {
 } from '@angular/material';
 import { ConfirmDialogComponent } from '../shared/confirm-dialog/confirm-dialog.component';
 import { delay } from 'rxjs/operators';
+import { ShoppingListUnsubscribeService } from './shopping-list-unsubscribe.service';
 
 @Component({
     selector: 'app-shopping-list',
     templateUrl: './shopping-list.component.html',
     styleUrls: ['./shopping-list.component.css']
 })
-export class ShoppingListComponent implements OnInit, AfterViewInit {
+export class ShoppingListComponent implements OnInit, AfterViewInit, OnDestroy {
     dataSource = new MatTableDataSource<Ingredient>(); // Propiedad para que la tabla dibuje los datos.
     displayedColumns: string[] = [
         'ingredientName',
@@ -60,11 +67,13 @@ export class ShoppingListComponent implements OnInit, AfterViewInit {
      * @param {CloudFirestoreService} cloudFirestoreService: instancia global de la clase del servicio CloudFirestoreService.
      * @param store: estado de la parte shopping-list.
      * @param dialog: material dialog para invocar al componente ConfirmDialogComponent.
+     * @param unsubscribeService
      */
     constructor(
         private cloudFirestoreService: CloudFirestoreService,
         private store: Store<fromShoppingList.State>,
-        private dialog: MatDialog
+        private dialog: MatDialog,
+        private unsubscribeService: ShoppingListUnsubscribeService
     ) {}
 
     /**
@@ -78,8 +87,14 @@ export class ShoppingListComponent implements OnInit, AfterViewInit {
                 (uid: string) =>
                     (this.cloudFirestorePath = `users/${uid}/shopping-list`)
             );
-        // Se inicializa el store con los ingredientes de la colección shopping-list recuperados de Cloud Firestore.
-        this.store.dispatch(new shoppingListActions.ShoppingListSync());
+        // Se inicializa el store con los ingredientes de la colección shopping-list recuperados de Cloud Firestore si estan ya sincronizados.
+        this.store
+            .pipe(select(fromShoppingList.getIsSynced))
+            .subscribe((isSynced: boolean) =>
+                this.store.dispatch(
+                    new shoppingListActions.ShoppingListStartSyncing()
+                )
+            );
 
         // Observable isLoading del estado para mostrar el spinner.
         this.isLoading$ = this.store.pipe(
@@ -198,5 +213,10 @@ export class ShoppingListComponent implements OnInit, AfterViewInit {
             this.cloudFirestoreFieldPath,
             States.ShoppingList
         );
+    }
+
+    ngOnDestroy(): void {
+        this.unsubscribeService.unsubscribeComponent$.next();
+        this.store.dispatch(new shoppingListActions.ShoppingListStoptSyncing());
     }
 }

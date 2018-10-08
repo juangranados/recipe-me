@@ -19,13 +19,14 @@ export interface State extends EntityState<IngredientId> {
     // ids: array de los ids de los ingredientes. Los ids son los mismos que tiene en Cloud Firestore.
     // entities: variable de tipo diccionario de ingredientes.
     isLoading: boolean; // Indica que los datos se están recibiendo para mostrar un spinner en la pantalla.
+    isSynced: Boolean; // Indica que esta sincronizado el store con Firebase
     error?: String; // Código de error.
 }
 
 // Definición de estado inicial.
-// Sólo es necesario especificar el campo isLoading.
 export const initialState: State = shoppingListAdapter.getInitialState({
-    isLoading: false
+    isLoading: false,
+    isSynced: false
 });
 
 /**
@@ -50,7 +51,21 @@ export function shoppingListReducer(
         case actions.SHOPPING_LIST_ERROR: // Firebase devuelve un mensaje de error.
             return { ...state, isLoading: false, error: action.payload };
 
-        // Estas tres acciones se lanzan mediante el efecto que se ejecuta al lanzar la acción SHOPPING_LIST_SYNC desde shopping-list.effects.ts.
+        case actions.SHOPPING_LIST_SYNCED: // El state esta sincronizado con Firebase.
+            return { ...state, isSynced: true };
+
+        case actions.SHOPPING_LIST_STOP_SYNCING: // Se detiene la sincronización del estado con Firebase.
+            return initialState;
+
+        case actions.SHOPPING_LIST_ERROR_SYNC: // Error de sincronización con Firebase.
+            return {
+                ...state,
+                isLoading: false,
+                error: action.payload,
+                isSynced: false
+            };
+
+        // Estas tres acciones se lanzan mediante el efecto que se ejecuta al lanzar la acción SHOPPING_LIST_START_SYNCING desde shopping-list.effects.ts.
 
         case actions.INGREDIENT_ADDED: // Se añade un ingrediente mediante la función addOne de EntityState.
             return shoppingListAdapter.addOne(action.payload, {
@@ -111,6 +126,10 @@ export const getError = createSelector(
 export const getIsLoading = createSelector(
     getShoppingListState,
     (state: State) => state.isLoading
+); // Selector de isLoading
+export const getIsSynced = createSelector(
+    getShoppingListState,
+    (state: State) => state.isSynced
 ); // Selector de isLoading
 export const getIngredientById = id =>
     createSelector(selectEntities, entities => entities[id]);

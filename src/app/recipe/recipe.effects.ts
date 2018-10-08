@@ -5,17 +5,21 @@ import { Action, select, Store } from '@ngrx/store';
 import {
     catchError,
     delay,
+    first,
     map,
     mergeMap,
     switchMap,
-    take
+    take,
+    takeUntil
 } from 'rxjs/operators';
 import { AngularFirestore } from '@angular/fire/firestore';
 import * as recipeActions from './recipe.actions';
 import * as fromRecipe from './recipe.reducer';
 import * as fromAuth from '../auth/auth.reducer';
 import { Recipe } from './recipe.model';
+import { RecipeUnsubscribeService } from './recipe-unsubscribe.service';
 
+// https://itnext.io/3-common-mistakes-when-using-angular-ngrx-firebase-9de4e241d866
 // Las clase que contienen los efectos deben llevar el decorador @Injectable()
 @Injectable()
 export class RecipeEffects {
@@ -24,11 +28,14 @@ export class RecipeEffects {
      * @param actions$: las clases con efectos siempre reciben un observable de tipo Action para filtrar las acciones.
      * @param afs: instancia de la clase AngularFirestore para realizar operaciones sobre Cloud Firestore.
      * @param store: store de la parte recipes para poder lanzar acciones.
+     * @param unsubscribeService: servicio que contiene un observable que se utiliza para parar la suscripción a
+     * stateChanges de la colección de recetas.
      */
     constructor(
         private actions$: Actions,
         private readonly afs: AngularFirestore,
-        private store: Store<fromRecipe.State>
+        private store: Store<fromRecipe.State>,
+        private unsubscribeService: RecipeUnsubscribeService
     ) {}
 
     // Efecto que se ejecuta al lanzar la acción RECIPES_SYNC.
@@ -40,15 +47,14 @@ export class RecipeEffects {
         .pipe(
             // Se recupera el UID del usuario del store
             switchMap(() => {
-                return this.store.pipe(select(fromAuth.getUid));
+                return this.store.pipe(
+                    select(fromAuth.getUid),
+                    takeUntil(this.unsubscribeService.unsubscribe$)
+                );
             })
         )
         .pipe(
             switchMap((uid: string) => {
-                // Se devuelve un observable nuevo que informa de los cambios que se producen sobre una colección de Cloud Firestore.
-                // Al inicio, devuelve todos los elementos de la colección como added.
-                // Conforme se vayan produciendo modificaciones irá devolviendo los cambios en los documentos de la colección.
-
                 // Se comprueba si la colección contiene datos para indicar que se empieza la carga.
                 this.afs
                     .collection<Recipe>(`users/${uid}/recipes`)
@@ -61,9 +67,14 @@ export class RecipeEffects {
                             );
                         }
                     });
+                // Se devuelve un observable nuevo que informa de los cambios que se producen sobre una colección de Cloud Firestore.
+                // Al inicio, devuelve todos los elementos de la colección como added.
+                // Conforme se vayan produciendo modificaciones irá devolviendo los cambios en los documentos de la colección.
+                // La suscripción esta activa hasta que se reciba la orden de unsubscribe desde el servicio unsubscribeService al destruirse el componente RecipesComponent.
                 return this.afs
                     .collection<Recipe>(`users/${uid}/recipes`)
-                    .stateChanges();
+                    .stateChanges()
+                    .pipe(takeUntil(this.unsubscribeService.unsubscribe$));
                 // .pipe(delay(1000)); // Delay de palisco para mostrar el spinner.
                 // return this.afs.collection<Recipe>('recipes').stateChanges(); // Se devuelve un Observable que enviará todos los cambios que se producen en la colección.
             }),
