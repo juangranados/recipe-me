@@ -17,7 +17,6 @@ import { environment } from '../environments/environment';
 import { AppComponent } from './app.component';
 import { AuthModule } from './auth/auth.module';
 import { CoreModule } from './core/core.module';
-import { NgxSpinnerModule } from 'ngx-spinner'; // Spinner de carga.
 import { metaReducers, reducers } from './app.reducer'; // Funciones reducer de la aplicación.
 import { AuthEffects } from './auth/auth.effects';
 import { ConfirmDialogComponent } from './shared/confirm-dialog/confirm-dialog.component';

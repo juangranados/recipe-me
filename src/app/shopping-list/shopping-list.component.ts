@@ -217,6 +217,6 @@ export class ShoppingListComponent implements OnInit, AfterViewInit, OnDestroy {
 
     ngOnDestroy(): void {
         this.unsubscribeService.unsubscribeComponent$.next();
-        this.store.dispatch(new shoppingListActions.ShoppingListStoptSyncing());
+        this.store.dispatch(new shoppingListActions.ShoppingListStopSyncing());
     }
 }

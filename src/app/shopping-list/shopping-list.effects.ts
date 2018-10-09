@@ -44,7 +44,10 @@ export class ShoppingListEffects {
         )
         .pipe(
             switchMap(() => {
-                return this.store.pipe(select(fromAuth.getUid));
+                return this.store.pipe(
+                    select(fromAuth.getUid),
+                    takeUntil(this.unsubscribeService.unsubscribe$)
+                );
             })
         )
         .pipe(

@@ -36,7 +36,7 @@ export class ShoppingListStartSyncing implements Action {
     constructor() {}
 }
 
-export class ShoppingListStoptSyncing implements Action {
+export class ShoppingListStopSyncing implements Action {
     readonly type = SHOPPING_LIST_STOP_SYNCING; // Tipo de la acción.
     constructor() {}
 }
@@ -85,7 +85,7 @@ export class Removed implements Action {
 // Se exportan todas las acciones juntas para poder usarlas en otras clases.
 export type ShoppingListActions =
     | ShoppingListStartSyncing
-    | ShoppingListStoptSyncing
+    | ShoppingListStopSyncing
     | ShoppingListSynced
     | ShoppingListErrorSync
     | ShoppingListStopLoading
