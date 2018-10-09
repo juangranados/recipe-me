@@ -18,6 +18,8 @@ import * as shoppingListActions from './shopping-list.actions';
 import * as fromShoppingList from './shopping-list.reducer';
 import * as fromAuth from '../auth/auth.reducer';
 import { ShoppingListUnsubscribeService } from './shopping-list-unsubscribe.service';
+import * as fromRecipe from '../recipe/recipe.reducer';
+import * as recipeActions from '../recipe/recipe.actions';
 
 // Las clase que contienen los efectos deben llevar el decorador @Injectable()
 @Injectable()
@@ -43,6 +45,7 @@ export class ShoppingListEffects {
             ofType(shoppingListActions.SHOPPING_LIST_START_SYNCING) // Sólo se ejecuta si la acción es de tipo SHOPPING_LIST_START_SYNCING.
         )
         .pipe(
+            // Se recupera el UID del usuario del store
             switchMap(() => {
                 return this.store.pipe(
                     select(fromAuth.getUid),
@@ -51,49 +54,54 @@ export class ShoppingListEffects {
             })
         )
         .pipe(
-            switchMap(
+            switchMap((uid: string) => {
+                // Se comprueba si la colección contiene datos para indicar que se empieza la carga.
+                this.afs
+                    .collection<Ingredient>(`users/${uid}/shopping-list`)
+                    .stateChanges()
+                    .pipe(take(1))
+                    .subscribe(data => {
+                        if (data.length) {
+                            this.store.dispatch(
+                                new shoppingListActions.ShoppingListStartLoading() // Se cambia el estado para reflejar que se inicia una operación asíncrona en Firebase.
+                            );
+                        }
+                    });
                 // Se devuelve un observable nuevo que informa de los cambios que se producen sobre una colección de Cloud Firestore.
                 // Al inicio, devuelve todos los elementos de la colección como added.
                 // Conforme se vayan produciendo modificaciones irá devolviendo los cambios en los documentos de la colección.
-                (uid: string) => {
-                    // Se comprueba si la colección contiene datos para indicar que se empieza la carga.
-                    this.afs
-                        .collection<Ingredient>(`users/${uid}/shopping-list`)
-                        .stateChanges()
-                        .pipe(take(1))
-                        .subscribe(data => {
-                            if (data.length) {
-                                this.store.dispatch(
-                                    new shoppingListActions.ShoppingListStartLoading() // Se cambia el estado para reflejar que se inicia una operación asíncrona en Firebase.
-                                );
-                            }
-                        });
-                    return this.afs
-                        .collection<Ingredient>(`users/${uid}/shopping-list`)
-                        .stateChanges()
-                        .pipe(takeUntil(this.unsubscribeService.unsubscribe$));
-                    // .pipe(delay(2000)); // Delay de palisco para mostrar el spinner.
-                    // return this.afs.collection<Ingredient>('shopping-list').stateChanges(); // Se devuelve un Observable que enviará todos los cambios que se producen en la colección.
-                }
-            ),
+                // La suscripción esta activa hasta que se reciba la orden de unsubscribe desde el servicio unsubscribeService al destruirse el componente ShoppingListComponent.
+                return this.afs
+                    .collection<Ingredient>(`users/${uid}/shopping-list`)
+                    .stateChanges()
+                    .pipe(takeUntil(this.unsubscribeService.unsubscribe$));
+                // .pipe(delay(2000)); // Delay de palisco para mostrar el spinner.
+                // return this.afs.collection<Ingredient>('shopping-list').stateChanges(); // Se devuelve un Observable que enviará todos los cambios que se producen en la colección.
+            }),
             mergeMap(actions => actions), // Se agrupan todos los observables recibidos en uno solo para procesar las acciones que devuelve Cloud Firestore.
             map(action => {
                 // Se procesa cada acción devuelta por Cloud Firestore para modificar el estado de la parte shopping list.
                 // Se comprueba en el store si se ha marcado el inicio de la carga para pararlo, ya que se reciben los datos.
                 this.store
                     .pipe(
-                        select(fromShoppingList.getIsLoading),
+                        select(fromShoppingList.getStatus),
                         take(1)
                     ) // La suscripción coge sólo un elemento y se cierra.
-                    .subscribe((isLoading: Boolean) => {
-                        if (isLoading) {
-                            this.store.dispatch(
-                                new shoppingListActions.ShoppingListStopLoading()
-                            ); // Se informa al estado de que para la carga al recibirse los datos de Cloud Firestore.
+                    .subscribe(
+                        (status: { isSynced: boolean; isLoading: boolean }) => {
+                            if (status.isLoading) {
+                                this.store.dispatch(
+                                    new shoppingListActions.ShoppingListStopLoading()
+                                ); // Se informa al estado de que para la carga al recibirse los datos de Cloud Firestore.
+                            }
+                            if (!status.isSynced) {
+                                this.store.dispatch(
+                                    new shoppingListActions.ShoppingListSynced()
+                                ); // Se informa al estado de que para la carga al recibirse los datos de Cloud Firestore.
+                            }
                         }
-                    });
+                    );
                 // Se lanza una acción nueva por cada acción devuelta por Cloud Firestore.
-                // De este modo el estado siempre está sincronizado ya que se aplicarán los mismos cambios que en Cloud Firestore.
                 return {
                     type: `[Shopping List] Ingredient ${action.type}`, // Tipo de la acción que devuelve Firebase: added | modified | removed
                     payload: {

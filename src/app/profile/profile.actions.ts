@@ -2,7 +2,8 @@
 import { Action } from '@ngrx/store';
 import { ProfileModel } from './profile.model';
 
-export const SYNC_PROFILE_DATA = '[Profile] Sync Profile Data'; // Obtener datos del usuario de Firebase.
+export const START_SYNC_PROFILE_DATA = '[Profile] Start Sync Profile Data'; // Empezar la sincronización de datos del usuario con Firebase.
+export const STOP_SYNC_PROFILE_DATA = '[Profile] Stop Sync Profile Data'; // Parar la sincronización de datos del usuario con Firebase.
 export const SYNCED_PROFILE_DATA = '[Profile] Synced Profile Data'; // Los datos del usuario de Firebase están sincronizados con el store.
 export const SET_PROFILE_DATA = '[Profile] Set Profile Data'; // Guardar datos del usuario en Firebase.
 export const OK_SETTING_PROFILE_DATA = '[Profile] OK Setting Profile Data'; // Guardar datos del usuario en Firebase.
@@ -13,10 +14,16 @@ export const ERROR_SETTING_PROFILE_DATA =
     '[Profile] Error Setting Profile Data'; // Error al guardar datos del usuario
 
 // 2.-  Se exportan las acciones como clases para poder lanzar acciones invocándolas.
-export class SyncProfileData implements Action {
-    readonly type = SYNC_PROFILE_DATA;
+export class StartSyncProfileData implements Action {
+    readonly type = START_SYNC_PROFILE_DATA;
     constructor() {}
 }
+
+export class StopSyncProfileData implements Action {
+    readonly type = STOP_SYNC_PROFILE_DATA;
+    constructor() {}
+}
+
 export class SyncedProfileData implements Action {
     readonly type = SYNCED_PROFILE_DATA;
     constructor() {}
@@ -45,7 +52,8 @@ export class ErrorSettingProfileData {
 }
 // 3.- Se exporta un tipo que puede ser de una de las clases definidas anteriormente.
 export type ProfileActions =
-    | SyncProfileData
+    | StartSyncProfileData
+    | StopSyncProfileData
     | SyncedProfileData
     | SetProfileData
     | OkSettingProfileData

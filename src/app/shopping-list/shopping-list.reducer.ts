@@ -72,7 +72,8 @@ export function shoppingListReducer(
                 // Se genera un objeto representando el nuevo estado para borrar el campo error (de tenerlo).
                 ids: state.ids,
                 entities: state.entities,
-                isLoading: state.isLoading
+                isLoading: state.isLoading,
+                isSynced: state.isSynced
             });
 
         case actions.INGREDIENT_MODIFIED: // Se modifica un ingrediente mediante la función updateOne de EntityState.
@@ -85,7 +86,8 @@ export function shoppingListReducer(
                 {
                     ids: state.ids,
                     entities: state.entities,
-                    isLoading: state.isLoading
+                    isLoading: state.isLoading,
+                    isSynced: state.isSynced
                 }
             );
 
@@ -94,7 +96,8 @@ export function shoppingListReducer(
                 // Se genera un objeto representando el nuevo estado para borrar el campo error (de tenerlo).
                 ids: state.ids,
                 entities: state.entities,
-                isLoading: state.isLoading
+                isLoading: state.isLoading,
+                isSynced: state.isSynced
             });
         // Para acciones que no modifican el estado.
         default:
@@ -130,6 +133,12 @@ export const getIsLoading = createSelector(
 export const getIsSynced = createSelector(
     getShoppingListState,
     (state: State) => state.isSynced
+); // Selector de isLoading
+export const getStatus = createSelector(
+    getShoppingListState,
+    (state: State) => {
+        return { isSynced: state.isSynced, isLoading: state.isLoading };
+    }
 ); // Selector de isLoading
 export const getIngredientById = id =>
     createSelector(selectEntities, entities => entities[id]);

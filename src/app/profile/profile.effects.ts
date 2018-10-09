@@ -4,11 +4,12 @@ import { Observable, throwError } from 'rxjs';
 import { Action, select, Store } from '@ngrx/store';
 import * as fromAuth from '../auth/auth.reducer';
 import * as profileActions from './profile.actions';
-import { catchError, map, switchMap, take } from 'rxjs/operators';
+import { catchError, map, switchMap, take, takeUntil } from 'rxjs/operators';
 import * as fromProfile from './profile.reducer';
 import { AngularFirestore } from '@angular/fire/firestore';
 import { ProfileModel } from './profile.model';
 import { MessageService } from '../shared/message.service';
+import { ProfileUnsubscribeService } from './profile-unsubscribe.service';
 
 @Injectable()
 export class ProfileEffects {
@@ -16,12 +17,13 @@ export class ProfileEffects {
         private actions$: Actions,
         private store: Store<fromProfile.State>,
         private afs: AngularFirestore,
-        private messageService: MessageService
+        private messageService: MessageService,
+        private unsubscribeService: ProfileUnsubscribeService
     ) {}
     // Obtener datos del perfil de Firebase
     @Effect()
-    getProfileData$: Observable<Action> = this.actions$
-        .pipe(ofType(profileActions.SYNC_PROFILE_DATA))
+    syncProfileData$: Observable<Action> = this.actions$
+        .pipe(ofType(profileActions.START_SYNC_PROFILE_DATA))
         .pipe(switchMap(() => this.store.pipe(select(fromAuth.getUid))))
         .pipe(
             switchMap((uid: string) => {
@@ -29,7 +31,8 @@ export class ProfileEffects {
                     return this.afs
                         .collection('users')
                         .doc<ProfileModel>(uid)
-                        .valueChanges();
+                        .valueChanges()
+                        .pipe(takeUntil(this.unsubscribeService.unsubscribe$));
                 } else {
                     return throwError(
                         new Error(

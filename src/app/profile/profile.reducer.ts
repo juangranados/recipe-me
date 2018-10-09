@@ -2,12 +2,13 @@
 import {
     ERROR_GETTING_PROFILE_DATA,
     ERROR_SETTING_PROFILE_DATA,
-    SYNC_PROFILE_DATA,
+    START_SYNC_PROFILE_DATA,
     ProfileActions,
     SET_PROFILE_DATA,
     STORE_PROFILE_DATA,
     SYNCED_PROFILE_DATA,
-    OK_SETTING_PROFILE_DATA
+    OK_SETTING_PROFILE_DATA,
+    STOP_SYNC_PROFILE_DATA
 } from './profile.actions';
 import { createFeatureSelector, createSelector } from '@ngrx/store';
 
@@ -39,26 +40,33 @@ export const initialState: State = {
 export function profileReducer(state = initialState, action: ProfileActions) {
     // Se modifica el store en función del tipo de acción recibida.
     switch (action.type) {
-        case SYNC_PROFILE_DATA:
+        case START_SYNC_PROFILE_DATA:
             return {
                 ...state,
                 isLoading: true
             };
+
+        case STOP_SYNC_PROFILE_DATA:
+            return initialState;
+
         case SYNCED_PROFILE_DATA:
             return {
                 ...state,
                 isSynced: true
             };
+
         case SET_PROFILE_DATA:
             return {
                 ...state,
                 isLoading: true
             };
+
         case OK_SETTING_PROFILE_DATA:
             return {
                 ...state,
                 isLoading: false
             };
+
         case STORE_PROFILE_DATA:
             return {
                 ...state,
@@ -68,6 +76,7 @@ export function profileReducer(state = initialState, action: ProfileActions) {
                 profileImage: action.payload.profileImage,
                 isLoading: false
             };
+
         case ERROR_SETTING_PROFILE_DATA:
         case ERROR_GETTING_PROFILE_DATA:
             return {
@@ -76,6 +85,7 @@ export function profileReducer(state = initialState, action: ProfileActions) {
                 isSynced: false,
                 error: action.payload
             };
+
         default:
             return state; // Para el resto de de acciones no se modifica el store.
     }
@@ -95,6 +105,11 @@ export const getIsSynced = createSelector(
     getProfileState,
     (state: State) => state.isSynced
 ); // Selector de isLoading
+
+export const getStatus = createSelector(getProfileState, (state: State) => {
+    return { isSynced: state.isSynced, isLoading: state.isLoading };
+});
+// Selector de isLoading y isSynced
 
 export const getProfile = createSelector(getProfileState, (state: State) => {
     return {

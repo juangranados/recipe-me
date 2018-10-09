@@ -5,10 +5,10 @@ import { Subject } from 'rxjs';
     providedIn: 'root'
 })
 /**
- * Permite lanzar un observable que para la sincronización que se produce en ShoppingListEffects
+ * Permite lanzar un observable que para la sincronización que se produce en ProfileEffects
  * entre Firebase y el perfil.
  */
-export class ShoppingListUnsubscribeService {
+export class ProfileUnsubscribeService {
     // Subject que emite datos mediante el método next()
     public unsubscribeComponent$ = new Subject<void>();
     // Se transforma el subject en un observable para que pueda ser consumido por takeUntil

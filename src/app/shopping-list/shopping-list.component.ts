@@ -24,7 +24,7 @@ import {
     MatTableDataSource
 } from '@angular/material';
 import { ConfirmDialogComponent } from '../shared/confirm-dialog/confirm-dialog.component';
-import { delay } from 'rxjs/operators';
+import { delay, take } from 'rxjs/operators';
 import { ShoppingListUnsubscribeService } from './shopping-list-unsubscribe.service';
 
 @Component({
@@ -90,11 +90,14 @@ export class ShoppingListComponent implements OnInit, AfterViewInit, OnDestroy {
         // Se inicializa el store con los ingredientes de la colección shopping-list recuperados de Cloud Firestore si estan ya sincronizados.
         this.store
             .pipe(select(fromShoppingList.getIsSynced))
-            .subscribe((isSynced: boolean) =>
-                this.store.dispatch(
-                    new shoppingListActions.ShoppingListStartSyncing()
-                )
-            );
+            .pipe(take(1))
+            .subscribe((isSynced: boolean) => {
+                if (!isSynced) {
+                    this.store.dispatch(
+                        new shoppingListActions.ShoppingListStartSyncing()
+                    );
+                }
+            });
 
         // Observable isLoading del estado para mostrar el spinner.
         this.isLoading$ = this.store.pipe(
@@ -214,9 +217,14 @@ export class ShoppingListComponent implements OnInit, AfterViewInit, OnDestroy {
             States.ShoppingList
         );
     }
-
+    /**
+     * Al salir del componente, se libera la memoria del state, ya que no se
+     * utiliza fuera de este componente.
+     */
     ngOnDestroy(): void {
+        // Se para la suscripción a Firebase.
         this.unsubscribeService.unsubscribeComponent$.next();
+        // Se liberan los datos del store.
         this.store.dispatch(new shoppingListActions.ShoppingListStopSyncing());
     }
 }
