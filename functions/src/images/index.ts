@@ -13,6 +13,9 @@ const THUMB_MAX_WIDTH = 200;
 // Thumbnail prefix added to file names.
 const THUMB_PREFIX = 'thumb_';
 
+// File extension for the created JPEG files.
+const JPEG_EXTENSION = '.jpg';
+
 /**
  * When an image is uploaded in the Storage bucket We generate a thumbnail automatically using
  * ImageMagick.
@@ -103,4 +106,48 @@ export const generateThumbnail = functions.storage
             .push({ path: fileUrl, thumbnail: thumbFileUrl });
         console.log('Thumbnail URLs saved to database.');
         return;
+    });
+
+export const imageToJPGAndRedim = functions.storage
+    .object()
+    .onFinalize(async object => {
+        const filePath = object.name;
+        const fileDir = path.dirname(filePath);
+        const fileName = path.basename(filePath);
+        const JPEGFilePath = path.normalize(path.join(fileDir, fileName));
+        const tempLocalFile = path.join(os.tmpdir(), filePath);
+        const tempLocalDir = path.dirname(tempLocalFile);
+        const tempLocalJPEGFile = path.join(os.tmpdir(), JPEGFilePath);
+
+        // Exit if this is triggered on a file that is not an image.
+        if (!object.contentType.startsWith('image/')) {
+            console.log('This is not an image.');
+            return null;
+        }
+
+        const bucket = admin.storage().bucket(object.bucket);
+        // Create the temp directory where the storage file will be downloaded.
+        await mkdirp(tempLocalDir);
+        // Download file from bucket.
+        await bucket.file(filePath).download({ destination: tempLocalFile });
+        console.log('The file has been downloaded to', tempLocalFile);
+        // Redimensionar
+        await spawn.spawn(
+            'convert',
+            [
+                tempLocalFile,
+                '-thumbnail',
+                `${THUMB_MAX_WIDTH}x${THUMB_MAX_HEIGHT}>`,
+                tempLocalJPEGFile
+            ],
+            { capture: ['stdout', 'stderr'] }
+        );
+        console.log('JPEG image created at', tempLocalJPEGFile);
+        // Uploading the JPEG image.
+        await bucket.upload(tempLocalJPEGFile, { destination: JPEGFilePath });
+        console.log('JPEG image uploaded to Storage at', JPEGFilePath);
+        // Once the image has been converted delete the local files to free up disk space.
+        fs.unlinkSync(tempLocalJPEGFile);
+        fs.unlinkSync(tempLocalFile);
+        return null;
     });

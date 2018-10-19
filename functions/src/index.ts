@@ -1,12 +1,13 @@
-// import * as admin from 'firebase-admin';
-// Initializes Cloud Functions.
-// admin.initializeApp(functions.config().firebase);
 import * as functions from 'firebase-functions';
+import * as admin from 'firebase-admin';
+admin.initializeApp();
 
-// import * as images from './images';
-//
-// export const generateThumbnail = images.generateThumbnail;
+import * as images from './images/index';
+// // Start writing Firebase Functions
+// // https://firebase.google.com/docs/functions/typescript
 
 export const helloWorld = functions.https.onRequest((request, response) => {
-    response.send('Hello from Firebase!\n\n');
+    response.send('Hello from Firebase!');
 });
+
+export const imageToJPGAndRedim = images.imageToJPGAndRedim;

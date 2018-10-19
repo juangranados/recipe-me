@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { AngularFireStorage } from '@angular/fire/storage';
 import { select, Store } from '@ngrx/store';
 import * as fromProfile from '../profile.reducer';
@@ -9,6 +9,8 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MessageService } from '../../shared/message.service';
 import * as profileActions from '../profile.actions';
 import { Router } from '@angular/router';
+import { ResizeImageService } from '../../shared/resize-image.service';
+import { take } from 'rxjs/operators';
 
 @Component({
     selector: 'app-profile-edit',
@@ -26,6 +28,7 @@ export class ProfileEditComponent implements OnInit {
     profileForm: FormGroup; // Formulario.
     newProfilePath = null; // Ruta de la nueva foto en el storage.
     uploadError = false; // Error al subir la imagen.
+    profileSubscription: Subscription; // Para detener la suscripción al subir una nueva imagen.
 
     /**
      * Constructor de la clase
@@ -33,12 +36,14 @@ export class ProfileEditComponent implements OnInit {
      * @param store: estado de la aplicación.
      * @param messageService: instancia global de la clase MessageService para mostrar mensajes.
      * @param router: instancia global de la clase Router para navegar.
+     * @param resizeImageService: servicio para redimensionar imágenes.
      */
     constructor(
         private storage: AngularFireStorage,
         private store: Store<fromProfile.State>,
         private messageService: MessageService,
-        private router: Router
+        private router: Router,
+        private resizeImageService: ResizeImageService
     ) {}
 
     ngOnInit() {
@@ -61,7 +66,7 @@ export class ProfileEditComponent implements OnInit {
         });
         // Se obtienen los datos del perfil almacenados en el estado que se han
         // recuperado de Cloud Firestore.
-        this.store
+        this.profileSubscription = this.store
             .pipe(select(fromProfile.getProfile))
             .subscribe((profileData: ProfileModel) => {
                 if (profileData.name) {
@@ -73,6 +78,7 @@ export class ProfileEditComponent implements OnInit {
                         .then((url: string) => {
                             this.profileImage = url;
                             this.isLoading = false;
+                            this.profileSubscription.unsubscribe(); // Para que no de error la imagen de perfil.
                         })
                         .catch(error =>
                             this.messageService.setMessage(error.message)
@@ -108,36 +114,47 @@ export class ProfileEditComponent implements OnInit {
             this.storage.ref(this.newProfilePath).delete();
         }
         // Imagen seleccionada por el usuario.
-        const file = event.target.files[0];
-        // Generar un id aleatorio para la imagen
-        const randomId = Math.random()
-            .toString(36)
-            .substring(2);
-        // Ruta de la imagen dentro de Firebase.
-        this.newProfilePath = `${this.uid}/profile/${randomId}`;
-        // Referencia de la imagen para subir.
-        const fileRef = this.storage.ref(this.newProfilePath);
-        // Para mostrar la barra de progreso.
-        this.isUploading = true;
-        // Subir imagen
-        const task = this.storage.upload(this.newProfilePath, file);
+        // const file = event.target.files[0];
 
-        // Actuar después de la subida o ante error.
-        task.then(() =>
-            // Al terminar, se obtiene la url para descargar la imagen.
-            fileRef.getDownloadURL().subscribe(url => {
-                this.profileImage = url;
-                this.isUploading = false;
-                this.uploadError = false;
+        // Redimensionar imagen a 500px maximo
+        this.resizeImageService
+            .resizeImage(500, event.target.files[0])
+            .then((file: File) => {
+                // Generar un id aleatorio para la imagen
+                const randomId = Math.random()
+                    .toString(36)
+                    .substring(2);
+                // Ruta de la imagen dentro de Firebase.
+                this.newProfilePath = `${this.uid}/profile/${randomId}`;
+                // Referencia de la imagen para subir.
+                const fileRef = this.storage.ref(this.newProfilePath);
+                // Para mostrar la barra de progreso.
+                this.isUploading = true;
+                // Subir imagen
+                const task = this.storage.upload(this.newProfilePath, file);
+
+                // Actuar después de la subida o ante error.
+                task.then(() =>
+                    // Al terminar, se obtiene la url para descargar la imagen.
+                    fileRef.getDownloadURL().subscribe(url => {
+                        this.profileImage = url;
+                        this.isUploading = false;
+                        this.uploadError = false;
+                    })
+                ).catch(error => {
+                    // Se produce un error en la subida.
+                    this.messageService.setMessage(error.message);
+                    this.uploadError = true;
+                });
+
+                // Observable que indica el porcentaje de la subida.
+                this.uploadPercent = task.percentageChanges();
             })
-        ).catch(error => {
-            // Se produce un error en la subida.
-            this.messageService.setMessage(error.message);
-            this.uploadError = true;
-        });
-
-        // Observable que indica el porcentaje de la subida.
-        this.uploadPercent = task.percentageChanges();
+            .catch(error => {
+                // Se produce un error en la subida.
+                this.messageService.setMessage(error.message);
+                this.uploadError = true;
+            });
     }
 
     /**
